@@ -87,26 +87,15 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <h2 className="mb-2 text-sm font-semibold text-stone-600">Budget</h2>
-          <p className="text-lg font-semibold">
-            ₹{spent.toLocaleString('en-IN')} <span className="text-sm font-normal text-stone-400">of ₹{totalBudget.toLocaleString('en-IN')}</span>
-          </p>
-          <div className="mt-2">
-            <ProgressBar value={totalBudget ? (spent / totalBudget) * 100 : 0} />
-          </div>
-        </Card>
-        <Card>
-          <h2 className="mb-2 text-sm font-semibold text-stone-600">Checklist progress</h2>
-          <p className="text-lg font-semibold">
-            {tasksDone} <span className="text-sm font-normal text-stone-400">of {tasks.length} tasks</span>
-          </p>
-          <div className="mt-2">
-            <ProgressBar value={tasks.length ? (tasksDone / tasks.length) * 100 : 0} />
-          </div>
-        </Card>
-      </div>
+      <Card>
+        <h2 className="mb-2 text-sm font-semibold text-stone-600">Checklist progress</h2>
+        <p className="text-lg font-semibold">
+          {tasksDone} <span className="text-sm font-normal text-stone-400">of {tasks.length} tasks</span>
+        </p>
+        <div className="mt-2">
+          <ProgressBar value={tasks.length ? (tasksDone / tasks.length) * 100 : 0} />
+        </div>
+      </Card>
 
       {nextEvent && (
         <Card className="mt-4">
@@ -118,6 +107,16 @@ export default function Dashboard() {
           </p>
         </Card>
       )}
+
+      <Card className="mt-4">
+        <h2 className="mb-2 text-sm font-semibold text-stone-600">Budget</h2>
+        <p className="text-lg font-semibold">
+          ₹{spent.toLocaleString('en-IN')} <span className="text-sm font-normal text-stone-400">of ₹{totalBudget.toLocaleString('en-IN')}</span>
+        </p>
+        <div className="mt-2">
+          <ProgressBar value={totalBudget ? (spent / totalBudget) * 100 : 0} />
+        </div>
+      </Card>
     </div>
   )
 }
