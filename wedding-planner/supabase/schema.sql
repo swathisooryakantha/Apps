@@ -11,7 +11,6 @@ create table if not exists wedding_settings (
   wedding_date date,
   total_budget numeric(12, 2) default 0,
   theme_color text default '#e11d48',
-  couple_photo_url text,
   created_at timestamptz default now()
 );
 

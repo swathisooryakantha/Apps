@@ -4,6 +4,7 @@ import { useTable } from '../hooks/useTable'
 import { useWeddingSettings } from '../hooks/useWeddingSettings'
 import type { BudgetItem, Guest, Task, WeddingSettings, EventRow, Vendor } from '../lib/types'
 import { Card, Input, PageHeader, ProgressBar, Button } from '../components/ui'
+import PhotoBanner from '../components/PhotoBanner'
 
 export default function Dashboard() {
   const { settings, save } = useWeddingSettings()
@@ -36,11 +37,7 @@ export default function Dashboard() {
 
   return (
     <div>
-      {settings?.couple_photo_url && (
-        <div className="mb-5 overflow-hidden rounded-2xl">
-          <img src={settings.couple_photo_url} alt="" className="h-40 w-full object-cover md:h-56" />
-        </div>
-      )}
+      <PhotoBanner />
 
       <PageHeader
         title={
@@ -148,7 +145,6 @@ function SettingsForm({
   const [weddingDate, setWeddingDate] = useState(settings?.wedding_date ?? '')
   const [totalBudget, setTotalBudget] = useState(String(settings?.total_budget ?? ''))
   const [themeColor, setThemeColor] = useState(settings?.theme_color ?? '#e11d48')
-  const [photoUrl, setPhotoUrl] = useState(settings?.couple_photo_url ?? '')
 
   return (
     <form
@@ -161,7 +157,6 @@ function SettingsForm({
           wedding_date: weddingDate || null,
           total_budget: Number(totalBudget) || 0,
           theme_color: themeColor,
-          couple_photo_url: photoUrl || null,
         })
       }}
     >
@@ -184,15 +179,6 @@ function SettingsForm({
           type="number"
           value={totalBudget}
           onChange={(e) => setTotalBudget(e.target.value)}
-        />
-      </label>
-      <label className="text-sm text-stone-500 md:col-span-2">
-        Couple photo URL
-        <Input
-          className="mt-1"
-          placeholder="https://..."
-          value={photoUrl}
-          onChange={(e) => setPhotoUrl(e.target.value)}
         />
       </label>
       <div className="text-sm text-stone-500 md:col-span-2">

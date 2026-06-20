@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { useWeddingSettings } from '../hooks/useWeddingSettings'
+import { COUPLE_PHOTOS } from '../lib/photos'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: '🏠' },
@@ -48,15 +49,11 @@ export default function Layout() {
       {/* Sidebar (desktop / iPad landscape) */}
       <aside className="hidden w-60 shrink-0 border-r border-[var(--accent-100)] bg-white/70 p-5 backdrop-blur md:flex md:flex-col md:gap-1">
         <div className="mb-5 flex items-center gap-2 px-2">
-          {settings?.couple_photo_url ? (
-            <img
-              src={settings.couple_photo_url}
-              alt=""
-              className="h-9 w-9 rounded-full border border-[var(--accent-100)] object-cover"
-            />
-          ) : (
-            <span className="text-xl">💍</span>
-          )}
+          <img
+            src={COUPLE_PHOTOS[0]}
+            alt=""
+            className="h-9 w-9 rounded-full border border-[var(--accent-100)] object-cover"
+          />
           <div>
             <h1 className="font-display text-lg font-semibold leading-tight text-[var(--accent-800)]">
               {coupleNames || 'Our Wedding'}
