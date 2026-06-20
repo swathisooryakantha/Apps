@@ -28,6 +28,7 @@ create table if not exists events (
 
 create table if not exists budget_items (
   id uuid primary key default gen_random_uuid(),
+  parent_id uuid references budget_items(id) on delete cascade,
   category text not null,
   item_name text not null,
   estimated_cost numeric(12, 2) default 0,

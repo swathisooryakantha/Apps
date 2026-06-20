@@ -19,6 +19,7 @@ export interface EventRow {
 
 export interface BudgetItem {
   id: string
+  parent_id: string | null
   category: string
   item_name: string
   estimated_cost: number
