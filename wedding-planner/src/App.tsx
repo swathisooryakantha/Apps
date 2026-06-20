@@ -9,6 +9,7 @@ import Vendors from './pages/Vendors'
 import Tasks from './pages/Tasks'
 import Shopping from './pages/Shopping'
 import Inspiration from './pages/Inspiration'
+import Gifts from './pages/Gifts'
 
 function App() {
   return (
@@ -24,6 +25,7 @@ function App() {
           <Route path="tasks" element={<Tasks />} />
           <Route path="shopping" element={<Shopping />} />
           <Route path="inspiration" element={<Inspiration />} />
+          <Route path="gifts" element={<Gifts />} />
         </Route>
       </Routes>
     </BrowserRouter>

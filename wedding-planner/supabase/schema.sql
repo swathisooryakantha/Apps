@@ -35,6 +35,7 @@ create table if not exists budget_items (
   estimated_cost numeric(12, 2) default 0,
   actual_cost numeric(12, 2) default 0,
   paid boolean default false,
+  side text check (side in ('bride', 'groom', 'gift')) default 'bride',
   notes text,
   created_at timestamptz default now()
 );
@@ -48,6 +49,7 @@ create table if not exists guests (
   plus_one_count int default 0,
   phone text,
   needs_stay boolean default false,
+  invite_sent boolean default false,
   notes text,
   created_at timestamptz default now()
 );
@@ -126,6 +128,18 @@ create table if not exists inspiration_items (
   created_at timestamptz default now()
 );
 
+-- Gifts received, tracked so the couple can plan what to buy/avoid duplicates after the wedding
+create table if not exists gifts (
+  id uuid primary key default gen_random_uuid(),
+  giver_name text not null,
+  relation text,
+  category text,
+  gift_description text,
+  amount numeric(12, 2),
+  notes text,
+  created_at timestamptz default now()
+);
+
 -- Enable Row Level Security with permissive policies for the anon key.
 -- This app is intended for private/personal use shared only with people who have the link + anon key.
 alter table wedding_settings enable row level security;
@@ -139,6 +153,7 @@ alter table vendors enable row level security;
 alter table tasks enable row level security;
 alter table shopping_items enable row level security;
 alter table inspiration_items enable row level security;
+alter table gifts enable row level security;
 
 do $$
 declare
@@ -147,7 +162,7 @@ begin
   for t in select unnest(array[
     'wedding_settings','events','budget_items','guests',
     'stay_venues','stay_rooms','stay_assignments','vendors','tasks',
-    'shopping_items','inspiration_items'
+    'shopping_items','inspiration_items','gifts'
   ])
   loop
     execute format('drop policy if exists "allow anon full access" on %I', t);

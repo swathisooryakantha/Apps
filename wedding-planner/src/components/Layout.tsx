@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { to: '/tasks', label: 'Checklist', icon: '✅' },
   { to: '/shopping', label: 'Shopping & Prep', icon: '🛍️' },
   { to: '/inspiration', label: 'Inspiration', icon: '📸' },
+  { to: '/gifts', label: 'Gifts', icon: '🎁' },
 ]
 
 const MOBILE_PRIMARY = NAV_ITEMS.slice(0, 4)

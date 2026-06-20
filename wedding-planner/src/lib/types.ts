@@ -18,6 +18,8 @@ export interface EventRow {
   sort_order: number
 }
 
+export type BudgetSide = 'bride' | 'groom' | 'gift'
+
 export interface BudgetItem {
   id: string
   parent_id: string | null
@@ -26,6 +28,7 @@ export interface BudgetItem {
   estimated_cost: number
   actual_cost: number
   paid: boolean
+  side: BudgetSide
   notes: string | null
 }
 
@@ -41,6 +44,7 @@ export interface Guest {
   plus_one_count: number
   phone: string | null
   needs_stay: boolean
+  invite_sent: boolean
   notes: string | null
 }
 
@@ -109,5 +113,15 @@ export interface InspirationItem {
   category: string | null
   image_url: string | null
   source_link: string | null
+  notes: string | null
+}
+
+export interface Gift {
+  id: string
+  giver_name: string
+  relation: string | null
+  category: string | null
+  gift_description: string | null
+  amount: number | null
   notes: string | null
 }

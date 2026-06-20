@@ -1,9 +1,15 @@
 import { useState } from 'react'
 import { useTable } from '../hooks/useTable'
-import type { BudgetItem } from '../lib/types'
-import { Button, Card, EmptyState, Input, PageHeader, ProgressBar, Textarea } from '../components/ui'
+import type { BudgetItem, BudgetSide } from '../lib/types'
+import { Button, Card, EmptyState, Input, PageHeader, ProgressBar, Select, Textarea } from '../components/ui'
 
 const CATEGORIES = ['Venue', 'Catering', 'Attire', 'Jewelry', 'Photography', 'Decor', 'Priest & Rituals', 'Invitations', 'Gifts', 'Other']
+
+const SIDE_LABELS: Record<BudgetSide, string> = {
+  bride: "Bride's side",
+  groom: "Groom's side",
+  gift: 'Gift',
+}
 
 export default function Budget() {
   const { rows, insert, update, remove } = useTable<BudgetItem>('budget_items')
@@ -70,6 +76,8 @@ function BudgetRow({
   const hasChildren = children.length > 0
   const { estimated, actual } = totals(item, allItems)
   const pct = estimated ? Math.min(100, (actual / estimated) * 100) : 0
+  const paidCount = children.filter((c) => c.paid).length
+  const completionPct = hasChildren ? (paidCount / children.length) * 100 : 0
 
   if (editing) {
     return (
@@ -99,7 +107,9 @@ function BudgetRow({
           )}
           <div>
             <p className="font-medium text-stone-800">{item.item_name}</p>
-            <p className="text-xs text-stone-400">{item.category}</p>
+            <p className="text-xs text-stone-400">
+              {item.category} · {SIDE_LABELS[item.side]}
+            </p>
             {item.notes && <p className="text-xs text-stone-400">{item.notes}</p>}
           </div>
         </div>
@@ -128,8 +138,14 @@ function BudgetRow({
       </div>
 
       {hasChildren && (
-        <div className="mt-2">
+        <div className="mt-2 space-y-2">
           <ProgressBar value={pct} />
+          <div className="flex items-center gap-2">
+            <ProgressBar value={completionPct} />
+            <span className="w-16 shrink-0 text-right text-xs text-stone-400">
+              {paidCount}/{children.length} paid
+            </span>
+          </div>
         </div>
       )}
 
@@ -161,7 +177,7 @@ function BudgetRow({
         {addingSub ? (
           <BudgetForm
             compact
-            initial={{ category: item.category } as BudgetItem}
+            initial={{ category: item.category, side: item.side } as BudgetItem}
             onSave={(values) => {
               onInsert({ ...values, parent_id: item.id })
               setAddingSub(false)
@@ -216,6 +232,7 @@ function BudgetForm({
   const [itemName, setItemName] = useState(initial?.item_name ?? '')
   const [estimated, setEstimated] = useState(String(initial?.estimated_cost ?? ''))
   const [actual, setActual] = useState(String(initial?.actual_cost ?? ''))
+  const [side, setSide] = useState<BudgetSide>(initial?.side ?? 'bride')
   const [notes, setNotes] = useState(initial?.notes ?? '')
 
   return (
@@ -228,6 +245,7 @@ function BudgetForm({
           item_name: itemName,
           estimated_cost: Number(estimated) || 0,
           actual_cost: Number(actual) || 0,
+          side,
           notes,
         })
       }}
@@ -249,6 +267,14 @@ function BudgetForm({
       <label className="text-sm text-stone-500">
         {compact ? 'Payment name' : 'Item name'}
         <Input className="mt-1" value={itemName} onChange={(e) => setItemName(e.target.value)} required />
+      </label>
+      <label className="text-sm text-stone-500">
+        Side
+        <Select className="mt-1" value={side} onChange={(e) => setSide(e.target.value as BudgetSide)}>
+          <option value="bride">Bride's side</option>
+          <option value="groom">Groom's side</option>
+          <option value="gift">Gift</option>
+        </Select>
       </label>
       {!compact && (
         <label className="text-sm text-stone-500">

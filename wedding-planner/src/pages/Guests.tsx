@@ -67,6 +67,14 @@ export default function Guests() {
               {g.notes && <p className="text-xs text-stone-400">{g.notes}</p>}
             </div>
             <div className="flex items-center gap-2">
+              <label className="flex items-center gap-1 text-xs text-stone-500">
+                <input
+                  type="checkbox"
+                  checked={g.invite_sent}
+                  onChange={(e) => update(g.id, { invite_sent: e.target.checked })}
+                />
+                Invite sent
+              </label>
               <select
                 value={g.rsvp_status}
                 onChange={(e) => update(g.id, { rsvp_status: e.target.value as RsvpStatus })}
@@ -94,6 +102,7 @@ function GuestForm({ onSave }: { onSave: (v: Partial<Guest>) => void }) {
   const [plusOne, setPlusOne] = useState('0')
   const [phone, setPhone] = useState('')
   const [needsStay, setNeedsStay] = useState(false)
+  const [inviteSent, setInviteSent] = useState(false)
   const [notes, setNotes] = useState('')
 
   return (
@@ -108,6 +117,7 @@ function GuestForm({ onSave }: { onSave: (v: Partial<Guest>) => void }) {
           plus_one_count: Number(plusOne) || 0,
           phone,
           needs_stay: needsStay,
+          invite_sent: inviteSent,
           notes,
           rsvp_status: 'pending',
         })
@@ -140,6 +150,10 @@ function GuestForm({ onSave }: { onSave: (v: Partial<Guest>) => void }) {
       <label className="mt-6 flex items-center gap-2 text-sm text-stone-500">
         <input type="checkbox" checked={needsStay} onChange={(e) => setNeedsStay(e.target.checked)} />
         Needs accommodation
+      </label>
+      <label className="mt-6 flex items-center gap-2 text-sm text-stone-500">
+        <input type="checkbox" checked={inviteSent} onChange={(e) => setInviteSent(e.target.checked)} />
+        Invite sent
       </label>
       <label className="text-sm text-stone-500 md:col-span-2">
         Notes

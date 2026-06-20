@@ -3,7 +3,7 @@ import { useTable } from '../hooks/useTable'
 import type { InspirationItem } from '../lib/types'
 import { Button, Card, EmptyState, Input, PageHeader, Select, Textarea } from '../components/ui'
 
-const CATEGORIES = ['Decor', 'Bridal Look', 'Groom Look', 'Mehendi Design', 'Hairstyle', 'Jewelry', 'Reception Theme', 'Cake', 'Other']
+const CATEGORIES = ['Decor', 'Photography', 'Bridal Look', 'Groom Look', 'Mehendi Design', 'Hairstyle', 'Jewelry', 'Reception Theme', 'Cake', 'Other']
 
 function detectPlatform(url: string | null): { label: string; icon: string } | null {
   if (!url) return null
