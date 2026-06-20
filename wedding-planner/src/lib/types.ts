@@ -4,6 +4,8 @@ export interface WeddingSettings {
   groom_name: string | null
   wedding_date: string | null
   total_budget: number
+  theme_color: string | null
+  couple_photo_url: string | null
 }
 
 export interface EventRow {

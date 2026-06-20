@@ -1,12 +1,12 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { differenceInCalendarDays, format, parseISO } from 'date-fns'
-import { supabase } from '../lib/supabase'
 import { useTable } from '../hooks/useTable'
+import { useWeddingSettings } from '../hooks/useWeddingSettings'
 import type { BudgetItem, Guest, Task, WeddingSettings, EventRow, Vendor } from '../lib/types'
 import { Card, Input, PageHeader, ProgressBar, Button } from '../components/ui'
 
 export default function Dashboard() {
-  const [settings, setSettings] = useState<WeddingSettings | null>(null)
+  const { settings, save } = useWeddingSettings()
   const [editing, setEditing] = useState(false)
   const { rows: budget } = useTable<BudgetItem>('budget_items')
   const { rows: guests } = useTable<Guest>('guests')
@@ -14,24 +14,8 @@ export default function Dashboard() {
   const { rows: events } = useTable<EventRow>('events', { column: 'event_date' })
   const { rows: vendors } = useTable<Vendor>('vendors')
 
-  useEffect(() => {
-    async function load() {
-      if (!supabase) return
-      const { data } = await supabase.from('wedding_settings').select('*').limit(1).maybeSingle()
-      setSettings(data as WeddingSettings | null)
-    }
-    load()
-  }, [])
-
   async function saveSettings(values: Partial<WeddingSettings>) {
-    if (!supabase) return
-    if (settings) {
-      await supabase.from('wedding_settings').update(values).eq('id', settings.id)
-      setSettings({ ...settings, ...values })
-    } else {
-      const { data } = await supabase.from('wedding_settings').insert(values).select().single()
-      setSettings(data as WeddingSettings)
-    }
+    await save(values)
     setEditing(false)
   }
 
@@ -52,6 +36,12 @@ export default function Dashboard() {
 
   return (
     <div>
+      {settings?.couple_photo_url && (
+        <div className="mb-5 overflow-hidden rounded-2xl">
+          <img src={settings.couple_photo_url} alt="" className="h-40 w-full object-cover md:h-56" />
+        </div>
+      )}
+
       <PageHeader
         title={
           settings?.bride_name || settings?.groom_name
@@ -75,7 +65,7 @@ export default function Dashboard() {
       <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
         <Card>
           <p className="text-xs text-stone-400">Countdown</p>
-          <p className="mt-1 text-2xl font-semibold text-rose-700">
+          <p className="mt-1 text-2xl font-semibold text-[var(--accent-700)]">
             {daysLeft === null ? '—' : daysLeft >= 0 ? `${daysLeft}d` : 'Done!'}
           </p>
           <p className="text-xs text-stone-400">
@@ -84,17 +74,17 @@ export default function Dashboard() {
         </Card>
         <Card>
           <p className="text-xs text-stone-400">Guests confirmed</p>
-          <p className="mt-1 text-2xl font-semibold text-rose-700">{headcount}</p>
+          <p className="mt-1 text-2xl font-semibold text-[var(--accent-700)]">{headcount}</p>
           <p className="text-xs text-stone-400">{guests.length} invited total</p>
         </Card>
         <Card>
           <p className="text-xs text-stone-400">Vendors booked</p>
-          <p className="mt-1 text-2xl font-semibold text-rose-700">{bookedVendors}</p>
+          <p className="mt-1 text-2xl font-semibold text-[var(--accent-700)]">{bookedVendors}</p>
           <p className="text-xs text-stone-400">{vendors.length} total</p>
         </Card>
         <Card>
           <p className="text-xs text-stone-400">Tasks done</p>
-          <p className="mt-1 text-2xl font-semibold text-rose-700">
+          <p className="mt-1 text-2xl font-semibold text-[var(--accent-700)]">
             {tasksDone}/{tasks.length}
           </p>
         </Card>
@@ -135,6 +125,17 @@ export default function Dashboard() {
   )
 }
 
+const THEME_SWATCHES = [
+  { name: 'Rose', value: '#e11d48' },
+  { name: 'Maroon', value: '#9f1239' },
+  { name: 'Gold', value: '#b45309' },
+  { name: 'Saffron', value: '#ea580c' },
+  { name: 'Magenta', value: '#a21caf' },
+  { name: 'Teal', value: '#0f766e' },
+  { name: 'Plum', value: '#6d28d9' },
+  { name: 'Forest', value: '#15803d' },
+]
+
 function SettingsForm({
   settings,
   onSave,
@@ -146,6 +147,8 @@ function SettingsForm({
   const [groomName, setGroomName] = useState(settings?.groom_name ?? '')
   const [weddingDate, setWeddingDate] = useState(settings?.wedding_date ?? '')
   const [totalBudget, setTotalBudget] = useState(String(settings?.total_budget ?? ''))
+  const [themeColor, setThemeColor] = useState(settings?.theme_color ?? '#e11d48')
+  const [photoUrl, setPhotoUrl] = useState(settings?.couple_photo_url ?? '')
 
   return (
     <form
@@ -157,6 +160,8 @@ function SettingsForm({
           groom_name: groomName,
           wedding_date: weddingDate || null,
           total_budget: Number(totalBudget) || 0,
+          theme_color: themeColor,
+          couple_photo_url: photoUrl || null,
         })
       }}
     >
@@ -181,6 +186,33 @@ function SettingsForm({
           onChange={(e) => setTotalBudget(e.target.value)}
         />
       </label>
+      <label className="text-sm text-stone-500 md:col-span-2">
+        Couple photo URL
+        <Input
+          className="mt-1"
+          placeholder="https://..."
+          value={photoUrl}
+          onChange={(e) => setPhotoUrl(e.target.value)}
+        />
+      </label>
+      <div className="text-sm text-stone-500 md:col-span-2">
+        Theme color
+        <div className="mt-1 flex flex-wrap gap-2">
+          {THEME_SWATCHES.map((swatch) => (
+            <button
+              key={swatch.value}
+              type="button"
+              title={swatch.name}
+              onClick={() => setThemeColor(swatch.value)}
+              className="h-8 w-8 rounded-full border-2 transition"
+              style={{
+                backgroundColor: swatch.value,
+                borderColor: themeColor === swatch.value ? '#1c1917' : 'transparent',
+              }}
+            />
+          ))}
+        </div>
+      </div>
       <Button type="submit" className="md:col-span-2">
         Save
       </Button>

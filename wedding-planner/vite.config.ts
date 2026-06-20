@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name: 'Our Wedding Planner',
-        short_name: 'Wedding',
+        name: 'Swathvika Wedding',
+        short_name: 'Swathvika',
         description: 'Track and plan your wedding — budget, guests, vendors, stay, checklist, shopping, and inspiration.',
         theme_color: '#e11d48',
         background_color: '#fff7f5',

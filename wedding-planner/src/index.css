@@ -4,6 +4,15 @@
   color-scheme: light;
   --font-display: 'Playfair Display', Georgia, serif;
   --font-sans: 'Inter', system-ui, sans-serif;
+
+  --accent: #e11d48;
+  --accent-50: color-mix(in srgb, var(--accent) 6%, white);
+  --accent-100: color-mix(in srgb, var(--accent) 14%, white);
+  --accent-400: color-mix(in srgb, var(--accent) 70%, white);
+  --accent-500: color-mix(in srgb, var(--accent) 88%, white);
+  --accent-600: var(--accent);
+  --accent-700: color-mix(in srgb, var(--accent) 85%, black);
+  --accent-800: color-mix(in srgb, var(--accent) 70%, black);
 }
 
 body {

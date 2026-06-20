@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 export function Card({ children, className = '' }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`rounded-2xl border border-rose-100 bg-white p-4 shadow-sm md:p-5 ${className}`}>
+    <div className={`rounded-2xl border border-[var(--accent-100)] bg-white p-4 shadow-sm md:p-5 ${className}`}>
       {children}
     </div>
   )
@@ -34,8 +34,8 @@ export function Button({
   className?: string
 }) {
   const styles = {
-    primary: 'bg-rose-600 text-white hover:bg-rose-700',
-    secondary: 'bg-rose-50 text-rose-700 hover:bg-rose-100',
+    primary: 'bg-[var(--accent-600)] text-white hover:bg-[var(--accent-700)]',
+    secondary: 'bg-[var(--accent-50)] text-[var(--accent-700)] hover:bg-[var(--accent-100)]',
     danger: 'bg-red-50 text-red-600 hover:bg-red-100',
   }[variant]
   return (
@@ -53,7 +53,7 @@ export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
   return (
     <input
       {...props}
-      className={`w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-rose-400 ${props.className ?? ''}`}
+      className={`w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-[var(--accent-400)] ${props.className ?? ''}`}
     />
   )
 }
@@ -62,7 +62,7 @@ export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <select
       {...props}
-      className={`w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-rose-400 ${props.className ?? ''}`}
+      className={`w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-[var(--accent-400)] ${props.className ?? ''}`}
     />
   )
 }
@@ -71,7 +71,7 @@ export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement
   return (
     <textarea
       {...props}
-      className={`w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-rose-400 ${props.className ?? ''}`}
+      className={`w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-[var(--accent-400)] ${props.className ?? ''}`}
     />
   )
 }
@@ -79,8 +79,8 @@ export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement
 export function ProgressBar({ value }: { value: number }) {
   const pct = Math.max(0, Math.min(100, value))
   return (
-    <div className="h-2 w-full overflow-hidden rounded-full bg-rose-100">
-      <div className="h-full rounded-full bg-rose-500 transition-all" style={{ width: `${pct}%` }} />
+    <div className="h-2 w-full overflow-hidden rounded-full bg-[var(--accent-100)]">
+      <div className="h-full rounded-full bg-[var(--accent-500)] transition-all" style={{ width: `${pct}%` }} />
     </div>
   )
 }

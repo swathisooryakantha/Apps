@@ -1,6 +1,7 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { isSupabaseConfigured } from '../lib/supabase'
+import { useWeddingSettings } from '../hooks/useWeddingSettings'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: '🏠' },
@@ -21,6 +22,20 @@ export default function Layout() {
   const [moreOpen, setMoreOpen] = useState(false)
   const location = useLocation()
   const moreIsActive = MOBILE_MORE.some((item) => item.to === location.pathname)
+  const { settings } = useWeddingSettings()
+
+  const coupleNames =
+    settings?.bride_name || settings?.groom_name
+      ? `${settings?.bride_name ?? ''}${settings?.bride_name && settings?.groom_name ? ' & ' : ''}${settings?.groom_name ?? ''}`.trim()
+      : null
+
+  useEffect(() => {
+    document.documentElement.style.setProperty('--accent', settings?.theme_color || '#e11d48')
+  }, [settings?.theme_color])
+
+  useEffect(() => {
+    document.title = coupleNames ? `${coupleNames} — Wedding Planner` : 'Swathvika Wedding'
+  }, [coupleNames])
 
   return (
     <div className="flex min-h-svh flex-col text-stone-800 md:flex-row">
@@ -31,9 +46,24 @@ export default function Layout() {
       )}
 
       {/* Sidebar (desktop / iPad landscape) */}
-      <aside className="hidden w-60 shrink-0 border-r border-rose-100 bg-white/70 p-5 backdrop-blur md:flex md:flex-col md:gap-1">
-        <h1 className="font-display mb-1 px-2 text-xl font-semibold text-rose-800">💍 Our Wedding</h1>
-        <p className="mb-5 px-2 text-xs text-stone-400">Plan it together, beautifully.</p>
+      <aside className="hidden w-60 shrink-0 border-r border-[var(--accent-100)] bg-white/70 p-5 backdrop-blur md:flex md:flex-col md:gap-1">
+        <div className="mb-5 flex items-center gap-2 px-2">
+          {settings?.couple_photo_url ? (
+            <img
+              src={settings.couple_photo_url}
+              alt=""
+              className="h-9 w-9 rounded-full border border-[var(--accent-100)] object-cover"
+            />
+          ) : (
+            <span className="text-xl">💍</span>
+          )}
+          <div>
+            <h1 className="font-display text-lg font-semibold leading-tight text-[var(--accent-800)]">
+              {coupleNames || 'Our Wedding'}
+            </h1>
+            <p className="text-xs text-stone-400">Plan it together, beautifully.</p>
+          </div>
+        </div>
         {NAV_ITEMS.map((item) => (
           <NavLink
             key={item.to}
@@ -41,8 +71,8 @@ export default function Layout() {
             className={({ isActive }) =>
               `rounded-xl px-3 py-2.5 text-sm font-medium transition ${
                 isActive
-                  ? 'bg-rose-100 text-rose-700 shadow-sm'
-                  : 'text-stone-600 hover:bg-rose-50/80'
+                  ? 'bg-[var(--accent-100)] text-[var(--accent-700)] shadow-sm'
+                  : 'text-stone-600 hover:bg-[var(--accent-50)]'
               }`
             }
           >
@@ -75,7 +105,7 @@ export default function Layout() {
                   onClick={() => setMoreOpen(false)}
                   className={({ isActive }) =>
                     `flex flex-col items-center gap-1 rounded-xl px-2 py-3 text-xs font-medium ${
-                      isActive ? 'bg-rose-100 text-rose-700' : 'bg-rose-50/60 text-stone-600'
+                      isActive ? 'bg-[var(--accent-100)] text-[var(--accent-700)]' : 'bg-[var(--accent-50)]/60 text-stone-600'
                     }`
                   }
                 >
@@ -89,14 +119,14 @@ export default function Layout() {
       )}
 
       {/* Bottom tab bar (mobile / phone) */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-rose-100 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md shadow-[0_-4px_16px_rgba(0,0,0,0.04)] md:hidden">
+      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-[var(--accent-100)] bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md shadow-[0_-4px_16px_rgba(0,0,0,0.04)] md:hidden">
         {MOBILE_PRIMARY.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-0.5 py-2.5 text-[11px] font-medium ${
-                isActive ? 'text-rose-700' : 'text-stone-400'
+                isActive ? 'text-[var(--accent-700)]' : 'text-stone-400'
               }`
             }
           >
@@ -107,7 +137,7 @@ export default function Layout() {
         <button
           onClick={() => setMoreOpen((o) => !o)}
           className={`flex flex-col items-center justify-center gap-0.5 py-2.5 text-[11px] font-medium ${
-            moreOpen || moreIsActive ? 'text-rose-700' : 'text-stone-400'
+            moreOpen || moreIsActive ? 'text-[var(--accent-700)]' : 'text-stone-400'
           }`}
         >
           <span className="text-base">⋯</span>
