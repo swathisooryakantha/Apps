@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useTable } from '../hooks/useTable'
 import type { BudgetItem, BudgetSide } from '../lib/types'
+import { totals } from '../lib/budget'
 import { Button, Card, EmptyState, Input, PageHeader, ProgressBar, Select, Textarea } from '../components/ui'
 
 const CATEGORIES = ['Venue', 'Catering', 'Attire', 'Jewelry', 'Photography', 'Decor', 'Priest & Rituals', 'Invitations', 'Gifts', 'Other']
@@ -47,12 +48,6 @@ export default function Budget() {
       </div>
     </div>
   )
-}
-
-function totals(item: BudgetItem, allItems: BudgetItem[]): { estimated: number; actual: number } {
-  const children = allItems.filter((i) => i.parent_id === item.id)
-  const childActual = children.reduce((sum, c) => sum + totals(c, allItems).actual, 0)
-  return { estimated: item.estimated_cost, actual: item.actual_cost + childActual }
 }
 
 function BudgetRow({

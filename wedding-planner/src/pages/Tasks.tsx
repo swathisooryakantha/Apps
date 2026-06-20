@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { useTable } from '../hooks/useTable'
-import type { Task } from '../lib/types'
+import type { BudgetItem, Task } from '../lib/types'
 import { Button, Card, EmptyState, Input, PageHeader, ProgressBar, Select } from '../components/ui'
+import { totals as budgetTotals } from '../lib/budget'
 
 const TIMEFRAMES = ['12+ months', '6-9 months', '3-6 months', '1-2 months', 'Week of', 'Day of']
 
@@ -34,9 +35,13 @@ const STARTER_TASKS: { title: string; timeframe: string; subtasks?: string[] }[]
 
 export default function Tasks() {
   const { rows, insert, update, remove } = useTable<Task>('tasks')
+  const { rows: budgetRows } = useTable<BudgetItem>('budget_items')
   const [showForm, setShowForm] = useState(false)
 
   const topLevel = rows.filter((t) => !t.parent_id)
+  const budgetTopLevel = budgetRows.filter((b) => !b.parent_id)
+  const totalEstimated = budgetTopLevel.reduce((s, b) => s + budgetTotals(b, budgetRows).estimated, 0)
+  const totalActual = budgetTopLevel.reduce((s, b) => s + budgetTotals(b, budgetRows).actual, 0)
   const grouped = TIMEFRAMES.map((tf) => ({ tf, items: topLevel.filter((t) => t.timeframe === tf) })).filter(
     (g) => g.items.length > 0,
   )
@@ -102,6 +107,13 @@ export default function Tasks() {
           </div>
         )}
       </div>
+
+      <Card className="mt-5">
+        <p className="text-sm font-semibold text-stone-600">Budget summary</p>
+        <p className="mt-1 text-sm text-stone-500">
+          Estimated ₹{totalEstimated.toLocaleString('en-IN')} · Actual ₹{totalActual.toLocaleString('en-IN')}
+        </p>
+      </Card>
     </div>
   )
 }
