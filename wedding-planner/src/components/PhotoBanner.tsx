@@ -10,16 +10,15 @@ export default function PhotoBanner() {
   }, [])
 
   return (
-    <div className="relative mb-5 h-48 w-full overflow-hidden rounded-2xl md:h-64">
+    <div className="relative mb-5 h-80 w-full overflow-hidden rounded-2xl md:h-96">
       {COUPLE_PHOTOS.map((src, i) => (
-        <img
+        <div
           key={src}
-          src={src}
-          alt=""
-          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
-            i === index ? 'opacity-100' : 'opacity-0'
-          }`}
-        />
+          className={`absolute inset-0 transition-opacity duration-1000 ${i === index ? 'opacity-100' : 'opacity-0'}`}
+        >
+          <img src={src} alt="" className="h-full w-full scale-110 object-cover blur-2xl" />
+          <img src={src} alt="" className="absolute inset-0 h-full w-full object-contain" />
+        </div>
       ))}
       <div className="absolute inset-x-0 bottom-2 flex justify-center gap-1.5">
         {COUPLE_PHOTOS.map((src, i) => (
