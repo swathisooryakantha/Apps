@@ -125,6 +125,7 @@ function TaskRow({
   onRemove: (id: string) => void
   onInsert: (v: Partial<Task>) => Promise<Task | null>
 }) {
+  const [editing, setEditing] = useState(false)
   const [editingOwner, setEditingOwner] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [addingSubtask, setAddingSubtask] = useState(false)
@@ -135,6 +136,23 @@ function TaskRow({
   const doneCount = children.filter((c) => c.done).length
   const pct = hasSubtasks ? (doneCount / children.length) * 100 : 0
   const complete = hasSubtasks ? pct === 100 : task.done
+
+  if (editing) {
+    return (
+      <Card className="py-3">
+        <TaskForm
+          initial={task}
+          onSave={(values) => {
+            onUpdate(task.id, values)
+            setEditing(false)
+          }}
+        />
+        <Button variant="secondary" className="mt-2" onClick={() => setEditing(false)}>
+          Cancel
+        </Button>
+      </Card>
+    )
+  }
 
   return (
     <Card className="py-3">
@@ -178,6 +196,9 @@ function TaskRow({
           </button>
         )}
 
+        <Button variant="secondary" onClick={() => setEditing(true)}>
+          Edit
+        </Button>
         <Button variant="danger" onClick={() => onRemove(task.id)}>
           Delete
         </Button>
@@ -195,20 +216,7 @@ function TaskRow({
       {expanded && hasSubtasks && (
         <div className="mt-3 ml-6 space-y-1.5 border-l border-rose-100 pl-3">
           {children.map((c) => (
-            <div key={c.id} className="flex items-center justify-between gap-2">
-              <label className="flex flex-1 items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={c.done}
-                  onChange={(e) => onUpdate(c.id, { done: e.target.checked })}
-                  className="size-3.5"
-                />
-                <span className={`text-sm ${c.done ? 'text-stone-400 line-through' : 'text-stone-700'}`}>{c.title}</span>
-              </label>
-              <button onClick={() => onRemove(c.id)} className="text-xs text-stone-300 hover:text-red-500">
-                ×
-              </button>
-            </div>
+            <SubtaskRow key={c.id} subtask={c} onUpdate={onUpdate} onRemove={onRemove} />
           ))}
         </div>
       )}
@@ -246,6 +254,57 @@ function TaskRow({
         </div>
       )}
     </Card>
+  )
+}
+
+function SubtaskRow({
+  subtask,
+  onUpdate,
+  onRemove,
+}: {
+  subtask: Task
+  onUpdate: (id: string, v: Partial<Task>) => void
+  onRemove: (id: string) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const [title, setTitle] = useState(subtask.title)
+
+  if (editing) {
+    return (
+      <form
+        className="flex items-center gap-2"
+        onSubmit={(e) => {
+          e.preventDefault()
+          if (title.trim()) onUpdate(subtask.id, { title: title.trim() })
+          setEditing(false)
+        }}
+      >
+        <Input autoFocus className="text-sm" value={title} onChange={(e) => setTitle(e.target.value)} />
+        <Button type="submit">Save</Button>
+      </form>
+    )
+  }
+
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <label className="flex flex-1 items-center gap-2">
+        <input
+          type="checkbox"
+          checked={subtask.done}
+          onChange={(e) => onUpdate(subtask.id, { done: e.target.checked })}
+          className="size-3.5"
+        />
+        <span className={`text-sm ${subtask.done ? 'text-stone-400 line-through' : 'text-stone-700'}`}>{subtask.title}</span>
+      </label>
+      <div className="flex items-center gap-2 text-xs">
+        <button onClick={() => setEditing(true)} className="text-rose-500 hover:underline">
+          Edit
+        </button>
+        <button onClick={() => onRemove(subtask.id)} className="text-stone-300 hover:text-red-500">
+          ×
+        </button>
+      </div>
+    </div>
   )
 }
 
@@ -296,11 +355,12 @@ function OwnerPicker({
   )
 }
 
-function TaskForm({ onSave }: { onSave: (v: Partial<Task>) => void }) {
-  const [title, setTitle] = useState('')
-  const [timeframe, setTimeframe] = useState(TIMEFRAMES[0])
-  const [owner, setOwner] = useState('')
-  const [customOwner, setCustomOwner] = useState('')
+function TaskForm({ initial, onSave }: { initial?: Task; onSave: (v: Partial<Task>) => void }) {
+  const [title, setTitle] = useState(initial?.title ?? '')
+  const [timeframe, setTimeframe] = useState(initial?.timeframe ?? TIMEFRAMES[0])
+  const initialOwner = initial?.owner ?? ''
+  const [owner, setOwner] = useState(initialOwner && !OWNER_PRESETS.includes(initialOwner) ? 'Other' : initialOwner)
+  const [customOwner, setCustomOwner] = useState(initialOwner && !OWNER_PRESETS.includes(initialOwner) ? initialOwner : '')
 
   return (
     <form
@@ -308,7 +368,7 @@ function TaskForm({ onSave }: { onSave: (v: Partial<Task>) => void }) {
       onSubmit={(e) => {
         e.preventDefault()
         const finalOwner = owner === 'Other' ? customOwner.trim() : owner
-        onSave({ title, timeframe, owner: finalOwner || null, done: false })
+        onSave({ title, timeframe, owner: finalOwner || null, done: initial?.done ?? false })
       }}
     >
       <label className="text-sm text-stone-500 md:col-span-2">
