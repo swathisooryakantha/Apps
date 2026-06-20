@@ -45,14 +45,8 @@ export default function Budget() {
 
 function totals(item: BudgetItem, allItems: BudgetItem[]): { estimated: number; actual: number } {
   const children = allItems.filter((i) => i.parent_id === item.id)
-  if (children.length === 0) return { estimated: item.estimated_cost, actual: item.actual_cost }
-  return children.reduce(
-    (acc, c) => {
-      const t = totals(c, allItems)
-      return { estimated: acc.estimated + t.estimated, actual: acc.actual + t.actual }
-    },
-    { estimated: 0, actual: 0 },
-  )
+  const childActual = children.reduce((sum, c) => sum + totals(c, allItems).actual, 0)
+  return { estimated: item.estimated_cost, actual: item.actual_cost + childActual }
 }
 
 function BudgetRow({
@@ -148,9 +142,7 @@ function BudgetRow({
                 {c.notes && <p className="text-xs text-stone-400">{c.notes}</p>}
               </div>
               <div className="flex items-center gap-3 text-xs">
-                <span className="text-stone-400">
-                  Est. ₹{c.estimated_cost.toLocaleString('en-IN')} · Actual ₹{c.actual_cost.toLocaleString('en-IN')}
-                </span>
+                <span className="text-stone-400">Paid ₹{c.actual_cost.toLocaleString('en-IN')}</span>
                 <label className="flex items-center gap-1 text-stone-500">
                   <input type="checkbox" checked={c.paid} onChange={(e) => onUpdate(c.id, { paid: e.target.checked })} />
                   Paid
@@ -240,28 +232,32 @@ function BudgetForm({
         })
       }}
     >
+      {!compact && (
+        <label className="text-sm text-stone-500">
+          Category
+          <select
+            className="mt-1 w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-rose-400"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c}>{c}</option>
+            ))}
+          </select>
+        </label>
+      )}
       <label className="text-sm text-stone-500">
-        Category
-        <select
-          className="mt-1 w-full rounded-lg border border-stone-200 px-3 py-2 text-sm outline-rose-400"
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-        >
-          {CATEGORIES.map((c) => (
-            <option key={c}>{c}</option>
-          ))}
-        </select>
-      </label>
-      <label className="text-sm text-stone-500">
-        Item name
+        {compact ? 'Payment name' : 'Item name'}
         <Input className="mt-1" value={itemName} onChange={(e) => setItemName(e.target.value)} required />
       </label>
+      {!compact && (
+        <label className="text-sm text-stone-500">
+          Estimated cost (₹)
+          <Input className="mt-1" type="number" value={estimated} onChange={(e) => setEstimated(e.target.value)} />
+        </label>
+      )}
       <label className="text-sm text-stone-500">
-        Estimated cost (₹)
-        <Input className="mt-1" type="number" value={estimated} onChange={(e) => setEstimated(e.target.value)} />
-      </label>
-      <label className="text-sm text-stone-500">
-        Actual cost (₹)
+        {compact ? 'Amount paid (₹)' : 'Actual cost (₹)'}
         <Input className="mt-1" type="number" value={actual} onChange={(e) => setActual(e.target.value)} />
       </label>
       <label className={`text-sm text-stone-500 ${compact ? '' : 'md:col-span-2'}`}>
