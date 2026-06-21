@@ -213,6 +213,9 @@ function TaskRow({
           <span className={complete ? 'text-stone-400 line-through' : 'text-stone-800'}>
             {task.title} {complete && hasSubtasks && '🎉'}
           </span>
+          {task.due_date && !complete && (
+            <span className="shrink-0 text-xs text-stone-400">due {task.due_date}</span>
+          )}
         </div>
 
         {editingOwner ? (
@@ -397,6 +400,7 @@ function OwnerPicker({
 function TaskForm({ initial, onSave }: { initial?: Task; onSave: (v: Partial<Task>) => void }) {
   const [title, setTitle] = useState(initial?.title ?? '')
   const [timeframe, setTimeframe] = useState(initial?.timeframe ?? TIMEFRAMES[0])
+  const [dueDate, setDueDate] = useState(initial?.due_date ?? '')
   const initialOwner = initial?.owner ?? ''
   const [owner, setOwner] = useState(initialOwner && !OWNER_PRESETS.includes(initialOwner) ? 'Other' : initialOwner)
   const [customOwner, setCustomOwner] = useState(initialOwner && !OWNER_PRESETS.includes(initialOwner) ? initialOwner : '')
@@ -407,7 +411,7 @@ function TaskForm({ initial, onSave }: { initial?: Task; onSave: (v: Partial<Tas
       onSubmit={(e) => {
         e.preventDefault()
         const finalOwner = owner === 'Other' ? customOwner.trim() : owner
-        onSave({ title, timeframe, owner: finalOwner || null, done: initial?.done ?? false })
+        onSave({ title, timeframe, due_date: dueDate || null, owner: finalOwner || null, done: initial?.done ?? false })
       }}
     >
       <label className="text-sm text-stone-500 md:col-span-2">
@@ -421,6 +425,10 @@ function TaskForm({ initial, onSave }: { initial?: Task; onSave: (v: Partial<Tas
             <option key={tf}>{tf}</option>
           ))}
         </Select>
+      </label>
+      <label className="text-sm text-stone-500">
+        Due date (optional, for reminders)
+        <Input className="mt-1" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
       </label>
       <label className="text-sm text-stone-500">
         Owner

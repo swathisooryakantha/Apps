@@ -2,7 +2,11 @@ import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
 import { isSupabaseConfigured } from '../lib/supabase'
 import { useWeddingSettings } from '../hooks/useWeddingSettings'
+import { useTable } from '../hooks/useTable'
+import { useDueReminders } from '../hooks/useDueReminders'
+import { getNotificationPermission, notificationsSupported, requestNotificationPermission } from '../lib/notifications'
 import { COUPLE_PHOTOS } from '../lib/photos'
+import type { EventRow, Task } from '../lib/types'
 
 const NAV_ITEMS = [
   { to: '/', label: 'Dashboard', icon: '🏠' },
@@ -28,6 +32,11 @@ export default function Layout() {
   const location = useLocation()
   const moreIsActive = MOBILE_MORE.some((item) => item.to === location.pathname)
   const { settings } = useWeddingSettings()
+  const { rows: events } = useTable<EventRow>('events')
+  const { rows: tasks } = useTable<Task>('tasks')
+  const [notifPermission, setNotifPermission] = useState(getNotificationPermission())
+
+  useDueReminders(events, tasks)
 
   const coupleNames =
     settings?.bride_name || settings?.groom_name
@@ -47,6 +56,18 @@ export default function Layout() {
       {!isSupabaseConfigured && (
         <div className="bg-amber-200 px-4 py-2 text-center text-sm font-medium text-amber-900 md:fixed md:inset-x-0 md:top-0 md:z-50">
           Supabase isn't configured yet — data won't be saved or synced. See README for setup.
+        </div>
+      )}
+
+      {notificationsSupported() && notifPermission === 'default' && (
+        <div className="flex flex-wrap items-center justify-center gap-2 bg-[var(--accent-100)] px-4 py-2 text-center text-sm font-medium text-[var(--accent-800)]">
+          Get reminders for events and task due dates on this device.
+          <button
+            className="rounded-full bg-[var(--accent-700)] px-3 py-1 text-xs font-semibold text-white"
+            onClick={async () => setNotifPermission(await requestNotificationPermission())}
+          >
+            Enable notifications
+          </button>
         </div>
       )}
 
