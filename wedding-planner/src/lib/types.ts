@@ -125,3 +125,14 @@ export interface Gift {
   amount: number | null
   notes: string | null
 }
+
+export interface PostWeddingItem {
+  id: string
+  parent_id: string | null
+  title: string
+  category: string | null
+  cost: number | null
+  done: boolean
+  owner: string | null
+  notes: string | null
+}

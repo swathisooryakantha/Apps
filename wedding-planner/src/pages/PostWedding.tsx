@@ -1,85 +1,49 @@
 import { useState } from 'react'
 import { useTable } from '../hooks/useTable'
-import type { Task } from '../lib/types'
+import type { PostWeddingItem } from '../lib/types'
 import { Button, Card, EmptyState, Input, PageHeader, ProgressBar, Select } from '../components/ui'
 
-const TIMEFRAMES = ['12+ months', '6-9 months', '3-6 months', '1-2 months', 'Week of', 'Day of']
+const CATEGORIES = ['Home', 'Appliances', 'Furniture & Decor', 'Documents & Admin', 'Celebrations', 'Other']
 
 const OWNER_PRESETS = ['Me', 'Partner', 'Mom', 'Dad', 'Sister', 'Brother', 'Cousin', 'Other']
 
 const OWNER_STYLES = 'bg-violet-100 text-violet-700'
 
-const STARTER_TASKS: { title: string; timeframe: string; subtasks?: string[] }[] = [
-  { title: 'Fix wedding date with priest / panchangam', timeframe: '12+ months' },
-  { title: 'Set overall wedding budget', timeframe: '12+ months' },
-  { title: 'Book muhurtham & reception venues', timeframe: '12+ months' },
-  { title: 'Draft initial guest list', timeframe: '12+ months' },
-  { title: 'Shortlist & book wedding planner/coordinator', timeframe: '12+ months' },
-
-  { title: 'Finalize guest list', timeframe: '6-9 months' },
+const STARTER_ITEMS: { title: string; category: string; subtasks?: string[] }[] = [
+  { title: 'Decide where to set up home (rent / buy)', category: 'Home' },
   {
-    title: 'Book photographer & videographer',
-    timeframe: '6-9 months',
-    subtasks: ['Pre-wedding shoot', 'Wedding day coverage', 'Drone/cinematic add-on'],
+    title: 'Set up new home',
+    category: 'Home',
+    subtasks: ['Sign rental/sale agreement', 'Utilities & internet setup', 'Basic furniture (bed, sofa, dining)', 'Curtains & interiors'],
   },
-  { title: 'Book catering (veg/non-veg menu)', timeframe: '6-9 months' },
-  { title: 'Saree & blouse shopping', timeframe: '6-9 months' },
   {
-    title: 'Jewellery shopping',
-    timeframe: '6-9 months',
-    subtasks: ['Ring shopping', 'Necklace', 'Mangalsutra', 'Bangles & earrings'],
+    title: 'Buy major appliances',
+    category: 'Appliances',
+    subtasks: ['Refrigerator', 'Washing machine', 'TV', 'Kitchen appliances (mixer, stove, etc.)', 'AC / fans'],
   },
-  { title: 'Book mehendi & bridal makeup artist', timeframe: '6-9 months' },
-  { title: 'Decide wedding theme & color palette', timeframe: '6-9 months' },
-  { title: 'Book decorator / mandap designer', timeframe: '6-9 months' },
-  { title: 'Book live band / DJ / nadaswaram', timeframe: '6-9 months' },
-  { title: 'Design & order wedding invitations', timeframe: '6-9 months' },
-  { title: 'Book groom\'s attire (veshti, sherwani, etc.)', timeframe: '6-9 months' },
-
-  { title: 'Send invitations', timeframe: '3-6 months' },
-  { title: 'Arrange accommodation for outstation guests', timeframe: '3-6 months' },
-  { title: 'Book transport for guests & families', timeframe: '3-6 months' },
-  { title: 'Menu tasting with caterer', timeframe: '3-6 months' },
-  { title: 'Plan sangeet / haldi / mehendi function', timeframe: '3-6 months' },
-  { title: 'Order return gifts / wedding favors', timeframe: '3-6 months' },
-  { title: 'Book makeup & hair trial', timeframe: '3-6 months' },
-  { title: 'Arrange priest & ritual items (poojai saamagri)', timeframe: '3-6 months' },
-
-  { title: 'Blouse stitching & fittings', timeframe: '1-2 months' },
-  { title: 'Confirm decor & mandap setup', timeframe: '1-2 months' },
-  { title: 'Confirm final headcount with caterer', timeframe: '1-2 months' },
-  { title: 'Finalize seating arrangements', timeframe: '1-2 months' },
-  { title: 'Confirm all vendor contracts & advance payments', timeframe: '1-2 months' },
-  { title: 'Plan honeymoon / post-wedding trip', timeframe: '1-2 months' },
-  { title: 'Apply for marriage certificate / legal paperwork', timeframe: '1-2 months' },
-
-  { title: 'Pack for muhurtham & reception', timeframe: 'Week of' },
-  { title: 'Hand over schedule to family/coordinators', timeframe: 'Week of' },
-  { title: 'Confirm hair & makeup appointment times', timeframe: 'Week of' },
-  { title: 'Rehearse rituals with priest', timeframe: 'Week of' },
-  { title: 'Collect outfits, jewelry & accessories from vendors', timeframe: 'Week of' },
-
-  { title: 'Carry jewelry, documents, return gifts', timeframe: 'Day of' },
-  { title: 'Keep an emergency kit ready (pins, thread, stain remover)', timeframe: 'Day of' },
-  { title: 'Assign a point-of-contact for each vendor', timeframe: 'Day of' },
+  { title: 'Buy kitchen & home essentials (cookware, utensils, linens)', category: 'Furniture & Decor' },
+  { title: 'Update address on documents (ID, bank, etc.)', category: 'Documents & Admin' },
+  { title: 'Update bank accounts & nominee details', category: 'Documents & Admin' },
+  { title: 'Plan housewarming function', category: 'Celebrations' },
 ]
 
-export default function Tasks() {
-  const { rows, insert, update, remove } = useTable<Task>('tasks')
+export default function PostWedding() {
+  const { rows, insert, update, remove } = useTable<PostWeddingItem>('post_wedding_items')
   const [showForm, setShowForm] = useState(false)
 
   const topLevel = rows.filter((t) => !t.parent_id)
-  const grouped = TIMEFRAMES.map((tf) => ({ tf, items: topLevel.filter((t) => t.timeframe === tf) })).filter(
+  const grouped = CATEGORIES.map((c) => ({ c, items: topLevel.filter((t) => t.category === c) })).filter(
     (g) => g.items.length > 0,
   )
-  const untimed = topLevel.filter((t) => !t.timeframe)
-  const done = topLevel.filter((t) => isTaskDone(t, rows)).length
+  const uncategorized = topLevel.filter((t) => !t.category)
+  const done = topLevel.filter((t) => isItemDone(t, rows)).length
+  const totalCost = rows.reduce((s, r) => s + (r.cost || 0), 0)
 
-  async function seedStarterTasks() {
-    for (const t of STARTER_TASKS) {
+  async function seedStarterItems() {
+    for (const t of STARTER_ITEMS) {
       let parent = topLevel.find((r) => r.title.trim().toLowerCase() === t.title.trim().toLowerCase())
       if (!parent) {
-        parent = (await insert({ title: t.title, timeframe: t.timeframe, done: false })) ?? undefined
+        parent = (await insert({ title: t.title, category: t.category, done: false })) ?? undefined
       }
       if (t.subtasks && parent) {
         const existingChildren = rows.filter((r) => r.parent_id === parent!.id)
@@ -96,19 +60,19 @@ export default function Tasks() {
   return (
     <div>
       <PageHeader
-        title="Checklist"
-        subtitle={`${done} of ${topLevel.length} done`}
+        title="Post-Wedding Setup"
+        subtitle={`${done} of ${topLevel.length} done · ₹${totalCost.toLocaleString('en-IN')} spent`}
         action={
           <div className="flex gap-2">
-            <Button variant="secondary" onClick={seedStarterTasks}>Load wedding checklist</Button>
-            <Button onClick={() => setShowForm((s) => !s)}>{showForm ? 'Close' : '+ Add task'}</Button>
+            <Button variant="secondary" onClick={seedStarterItems}>Load starter checklist</Button>
+            <Button onClick={() => setShowForm((s) => !s)}>{showForm ? 'Close' : '+ Add item'}</Button>
           </div>
         }
       />
 
       {showForm && (
         <Card className="mb-4">
-          <TaskForm
+          <ItemForm
             onSave={(values) => {
               insert(values)
               setShowForm(false)
@@ -117,25 +81,27 @@ export default function Tasks() {
         </Card>
       )}
 
-      {rows.length === 0 && <EmptyState text="No tasks yet — add your own or load the wedding checklist." />}
+      {rows.length === 0 && (
+        <EmptyState text="Nothing here yet — track setting up your new home, buying appliances, and other post-wedding to-dos." />
+      )}
 
       <div className="space-y-5">
-        {grouped.map(({ tf, items }) => (
-          <div key={tf}>
-            <h2 className="mb-2 text-sm font-semibold text-stone-500">{tf}</h2>
+        {grouped.map(({ c, items }) => (
+          <div key={c}>
+            <h2 className="mb-2 text-sm font-semibold text-stone-500">{c}</h2>
             <div className="space-y-2">
               {items.map((t) => (
-                <TaskRow key={t.id} task={t} allTasks={rows} onUpdate={update} onRemove={remove} onInsert={insert} />
+                <ItemRow key={t.id} item={t} allItems={rows} onUpdate={update} onRemove={remove} onInsert={insert} />
               ))}
             </div>
           </div>
         ))}
-        {untimed.length > 0 && (
+        {uncategorized.length > 0 && (
           <div>
             <h2 className="mb-2 text-sm font-semibold text-stone-500">Other</h2>
             <div className="space-y-2">
-              {untimed.map((t) => (
-                <TaskRow key={t.id} task={t} allTasks={rows} onUpdate={update} onRemove={remove} onInsert={insert} />
+              {uncategorized.map((t) => (
+                <ItemRow key={t.id} item={t} allItems={rows} onUpdate={update} onRemove={remove} onInsert={insert} />
               ))}
             </div>
           </div>
@@ -145,24 +111,24 @@ export default function Tasks() {
   )
 }
 
-function isTaskDone(task: Task, allTasks: Task[]): boolean {
-  const children = allTasks.filter((t) => t.parent_id === task.id)
-  if (children.length === 0) return task.done
+function isItemDone(item: PostWeddingItem, allItems: PostWeddingItem[]): boolean {
+  const children = allItems.filter((t) => t.parent_id === item.id)
+  if (children.length === 0) return item.done
   return children.every((c) => c.done)
 }
 
-function TaskRow({
-  task,
-  allTasks,
+function ItemRow({
+  item,
+  allItems,
   onUpdate,
   onRemove,
   onInsert,
 }: {
-  task: Task
-  allTasks: Task[]
-  onUpdate: (id: string, v: Partial<Task>) => void
+  item: PostWeddingItem
+  allItems: PostWeddingItem[]
+  onUpdate: (id: string, v: Partial<PostWeddingItem>) => void
   onRemove: (id: string) => void
-  onInsert: (v: Partial<Task>) => Promise<Task | null>
+  onInsert: (v: Partial<PostWeddingItem>) => Promise<PostWeddingItem | null>
 }) {
   const [editing, setEditing] = useState(false)
   const [editingOwner, setEditingOwner] = useState(false)
@@ -170,19 +136,19 @@ function TaskRow({
   const [addingSubtask, setAddingSubtask] = useState(false)
   const [subtaskTitle, setSubtaskTitle] = useState('')
 
-  const children = allTasks.filter((t) => t.parent_id === task.id)
+  const children = allItems.filter((t) => t.parent_id === item.id)
   const hasSubtasks = children.length > 0
   const doneCount = children.filter((c) => c.done).length
   const pct = hasSubtasks ? (doneCount / children.length) * 100 : 0
-  const complete = hasSubtasks ? pct === 100 : task.done
+  const complete = hasSubtasks ? pct === 100 : item.done
 
   if (editing) {
     return (
       <Card className="py-3">
-        <TaskForm
-          initial={task}
+        <ItemForm
+          initial={item}
           onSave={(values) => {
-            onUpdate(task.id, values)
+            onUpdate(item.id, values)
             setEditing(false)
           }}
         />
@@ -200,8 +166,8 @@ function TaskRow({
           {!hasSubtasks && (
             <input
               type="checkbox"
-              checked={task.done}
-              onChange={(e) => onUpdate(task.id, { done: e.target.checked })}
+              checked={item.done}
+              onChange={(e) => onUpdate(item.id, { done: e.target.checked })}
               className="size-4"
             />
           )}
@@ -211,15 +177,16 @@ function TaskRow({
             </button>
           )}
           <span className={complete ? 'text-stone-400 line-through' : 'text-stone-800'}>
-            {task.title} {complete && hasSubtasks && '🎉'}
+            {item.title} {complete && hasSubtasks && '🎉'}
           </span>
+          {item.cost != null && <span className="shrink-0 text-xs text-stone-400">₹{item.cost.toLocaleString('en-IN')}</span>}
         </div>
 
         {editingOwner ? (
           <OwnerPicker
-            value={task.owner}
+            value={item.owner}
             onChange={(owner) => {
-              onUpdate(task.id, { owner })
+              onUpdate(item.id, { owner })
               setEditingOwner(false)
             }}
             onClose={() => setEditingOwner(false)}
@@ -228,17 +195,17 @@ function TaskRow({
           <button
             onClick={() => setEditingOwner(true)}
             className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${
-              task.owner ? OWNER_STYLES : 'bg-stone-100 text-stone-400'
+              item.owner ? OWNER_STYLES : 'bg-stone-100 text-stone-400'
             }`}
           >
-            {task.owner || '+ Owner'}
+            {item.owner || '+ Owner'}
           </button>
         )}
 
         <Button variant="secondary" onClick={() => setEditing(true)}>
           Edit
         </Button>
-        <Button variant="danger" onClick={() => onRemove(task.id)}>
+        <Button variant="danger" onClick={() => onRemove(item.id)}>
           Delete
         </Button>
       </div>
@@ -268,7 +235,7 @@ function TaskRow({
               onSubmit={(e) => {
                 e.preventDefault()
                 if (subtaskTitle.trim()) {
-                  onInsert({ title: subtaskTitle.trim(), parent_id: task.id, done: false })
+                  onInsert({ title: subtaskTitle.trim(), parent_id: item.id, done: false })
                   setSubtaskTitle('')
                 }
                 setAddingSubtask(false)
@@ -301,8 +268,8 @@ function SubtaskRow({
   onUpdate,
   onRemove,
 }: {
-  subtask: Task
-  onUpdate: (id: string, v: Partial<Task>) => void
+  subtask: PostWeddingItem
+  onUpdate: (id: string, v: Partial<PostWeddingItem>) => void
   onRemove: (id: string) => void
 }) {
   const [editing, setEditing] = useState(false)
@@ -394,9 +361,10 @@ function OwnerPicker({
   )
 }
 
-function TaskForm({ initial, onSave }: { initial?: Task; onSave: (v: Partial<Task>) => void }) {
+function ItemForm({ initial, onSave }: { initial?: PostWeddingItem; onSave: (v: Partial<PostWeddingItem>) => void }) {
   const [title, setTitle] = useState(initial?.title ?? '')
-  const [timeframe, setTimeframe] = useState(initial?.timeframe ?? TIMEFRAMES[0])
+  const [category, setCategory] = useState(initial?.category ?? CATEGORIES[0])
+  const [cost, setCost] = useState(String(initial?.cost ?? ''))
   const initialOwner = initial?.owner ?? ''
   const [owner, setOwner] = useState(initialOwner && !OWNER_PRESETS.includes(initialOwner) ? 'Other' : initialOwner)
   const [customOwner, setCustomOwner] = useState(initialOwner && !OWNER_PRESETS.includes(initialOwner) ? initialOwner : '')
@@ -407,20 +375,30 @@ function TaskForm({ initial, onSave }: { initial?: Task; onSave: (v: Partial<Tas
       onSubmit={(e) => {
         e.preventDefault()
         const finalOwner = owner === 'Other' ? customOwner.trim() : owner
-        onSave({ title, timeframe, owner: finalOwner || null, done: initial?.done ?? false })
+        onSave({
+          title,
+          category,
+          cost: cost ? Number(cost) : null,
+          owner: finalOwner || null,
+          done: initial?.done ?? false,
+        })
       }}
     >
       <label className="text-sm text-stone-500 md:col-span-2">
-        Task
+        Item
         <Input className="mt-1" value={title} onChange={(e) => setTitle(e.target.value)} required />
       </label>
       <label className="text-sm text-stone-500">
-        Timeframe
-        <Select className="mt-1" value={timeframe} onChange={(e) => setTimeframe(e.target.value)}>
-          {TIMEFRAMES.map((tf) => (
-            <option key={tf}>{tf}</option>
+        Category
+        <Select className="mt-1" value={category} onChange={(e) => setCategory(e.target.value)}>
+          {CATEGORIES.map((c) => (
+            <option key={c}>{c}</option>
           ))}
         </Select>
+      </label>
+      <label className="text-sm text-stone-500">
+        Cost (₹)
+        <Input className="mt-1" type="number" value={cost} onChange={(e) => setCost(e.target.value)} />
       </label>
       <label className="text-sm text-stone-500">
         Owner
@@ -440,7 +418,7 @@ function TaskForm({ initial, onSave }: { initial?: Task; onSave: (v: Partial<Tas
         </label>
       )}
       <Button type="submit" className="md:col-span-3">
-        Save task
+        Save item
       </Button>
     </form>
   )

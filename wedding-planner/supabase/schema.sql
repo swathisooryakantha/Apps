@@ -140,6 +140,19 @@ create table if not exists gifts (
   created_at timestamptz default now()
 );
 
+-- Post-wedding setup checklist (new home, appliances, document updates, etc.)
+create table if not exists post_wedding_items (
+  id uuid primary key default gen_random_uuid(),
+  parent_id uuid references post_wedding_items(id) on delete cascade,
+  title text not null,
+  category text,
+  cost numeric(12, 2),
+  done boolean default false,
+  owner text,
+  notes text,
+  created_at timestamptz default now()
+);
+
 -- Enable Row Level Security with permissive policies for the anon key.
 -- This app is intended for private/personal use shared only with people who have the link + anon key.
 alter table wedding_settings enable row level security;
@@ -154,6 +167,7 @@ alter table tasks enable row level security;
 alter table shopping_items enable row level security;
 alter table inspiration_items enable row level security;
 alter table gifts enable row level security;
+alter table post_wedding_items enable row level security;
 
 do $$
 declare
@@ -162,7 +176,7 @@ begin
   for t in select unnest(array[
     'wedding_settings','events','budget_items','guests',
     'stay_venues','stay_rooms','stay_assignments','vendors','tasks',
-    'shopping_items','inspiration_items','gifts'
+    'shopping_items','inspiration_items','gifts','post_wedding_items'
   ])
   loop
     execute format('drop policy if exists "allow anon full access" on %I', t);

@@ -10,6 +10,7 @@ import Tasks from './pages/Tasks'
 import Shopping from './pages/Shopping'
 import Inspiration from './pages/Inspiration'
 import Gifts from './pages/Gifts'
+import PostWedding from './pages/PostWedding'
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
           <Route path="shopping" element={<Shopping />} />
           <Route path="inspiration" element={<Inspiration />} />
           <Route path="gifts" element={<Gifts />} />
+          <Route path="post-wedding" element={<PostWedding />} />
         </Route>
       </Routes>
     </BrowserRouter>
