@@ -5,7 +5,7 @@ import { Button, Card, EmptyState, Input, PageHeader, ProgressBar, Select } from
 
 const TIMEFRAMES = ['12+ months', '6-9 months', '3-6 months', '1-2 months', 'Week of', 'Day of']
 
-const OWNER_PRESETS = ['Me', 'Partner', 'Mom', 'Dad', 'Sister', 'Brother', 'Cousin', 'Other']
+const OWNER_PRESETS = ['Me', 'Partner', 'Couple', 'Mom', 'Dad', 'Sister', 'Brother', 'Cousin', 'Other']
 
 const OWNER_STYLES = 'bg-violet-100 text-violet-700'
 

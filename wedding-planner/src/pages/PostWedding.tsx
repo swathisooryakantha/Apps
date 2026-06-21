@@ -5,7 +5,7 @@ import { Button, Card, EmptyState, Input, PageHeader, ProgressBar, Select } from
 
 const CATEGORIES = ['Home', 'Appliances', 'Furniture & Decor', 'Documents & Admin', 'Celebrations', 'Other']
 
-const OWNER_PRESETS = ['Me', 'Partner', 'Mom', 'Dad', 'Sister', 'Brother', 'Cousin', 'Other']
+const OWNER_PRESETS = ['Me', 'Partner', 'Couple', 'Mom', 'Dad', 'Sister', 'Brother', 'Cousin', 'Other']
 
 const OWNER_STYLES = 'bg-violet-100 text-violet-700'
 
