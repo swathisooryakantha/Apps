@@ -140,6 +140,17 @@ create table if not exists gifts (
   created_at timestamptz default now()
 );
 
+-- Wedding journal: a daily mood entry per person, paired with a comforting quote
+create table if not exists mood_entries (
+  id uuid primary key default gen_random_uuid(),
+  person text check (person in ('bride', 'groom')) not null,
+  entry_date date not null default current_date,
+  mood text not null,
+  quote text,
+  note text,
+  created_at timestamptz default now()
+);
+
 -- Post-wedding setup checklist (new home, appliances, document updates, etc.)
 create table if not exists post_wedding_items (
   id uuid primary key default gen_random_uuid(),
@@ -167,6 +178,7 @@ alter table tasks enable row level security;
 alter table shopping_items enable row level security;
 alter table inspiration_items enable row level security;
 alter table gifts enable row level security;
+alter table mood_entries enable row level security;
 alter table post_wedding_items enable row level security;
 
 do $$
@@ -176,7 +188,7 @@ begin
   for t in select unnest(array[
     'wedding_settings','events','budget_items','guests',
     'stay_venues','stay_rooms','stay_assignments','vendors','tasks',
-    'shopping_items','inspiration_items','gifts','post_wedding_items'
+    'shopping_items','inspiration_items','gifts','mood_entries','post_wedding_items'
   ])
   loop
     execute format('drop policy if exists "allow anon full access" on %I', t);

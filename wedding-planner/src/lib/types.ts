@@ -126,6 +126,17 @@ export interface Gift {
   notes: string | null
 }
 
+export type JournalPerson = 'bride' | 'groom'
+
+export interface MoodEntry {
+  id: string
+  person: JournalPerson
+  entry_date: string
+  mood: string
+  quote: string | null
+  note: string | null
+}
+
 export interface PostWeddingItem {
   id: string
   parent_id: string | null
