@@ -3,7 +3,18 @@ import { useTable } from '../hooks/useTable'
 import type { ShoppingItem, ShoppingStatus } from '../lib/types'
 import { Button, Card, EmptyState, Input, PageHeader, Select, Textarea } from '../components/ui'
 
-const CATEGORIES = ['Sarees', 'Blouses', 'Jewelry', 'Groom Attire', 'Footwear', 'Invitations', 'Return Gifts', 'Beauty/Makeup Trial', 'Other']
+const CATEGORIES = [
+  'Sarees',
+  'Blouses',
+  'Jewelry',
+  'Groom Attire',
+  'Footwear',
+  'Invitations',
+  'Return Gifts',
+  'Beauty/Makeup Trial',
+  'Post-Wedding Setup',
+  'Other',
+]
 
 const STATUS_STYLES: Record<ShoppingStatus, string> = {
   to_do: 'bg-stone-100 text-stone-500',

@@ -3,7 +3,7 @@ import { useTable } from '../hooks/useTable'
 import type { Task } from '../lib/types'
 import { Button, Card, EmptyState, Input, PageHeader, ProgressBar, Select } from '../components/ui'
 
-const TIMEFRAMES = ['12+ months', '6-9 months', '3-6 months', '1-2 months', 'Week of', 'Day of']
+const TIMEFRAMES = ['12+ months', '6-9 months', '3-6 months', '1-2 months', 'Week of', 'Day of', 'Post-Wedding']
 
 const OWNER_PRESETS = ['Me', 'Partner', 'Mom', 'Dad', 'Sister', 'Brother', 'Cousin', 'Other']
 
@@ -62,6 +62,22 @@ const STARTER_TASKS: { title: string; timeframe: string; subtasks?: string[] }[]
   { title: 'Carry jewelry, documents, return gifts', timeframe: 'Day of' },
   { title: 'Keep an emergency kit ready (pins, thread, stain remover)', timeframe: 'Day of' },
   { title: 'Assign a point-of-contact for each vendor', timeframe: 'Day of' },
+
+  { title: 'Decide where to set up home (rent / buy)', timeframe: 'Post-Wedding' },
+  {
+    title: 'Set up new home',
+    timeframe: 'Post-Wedding',
+    subtasks: ['Sign rental/sale agreement', 'Utilities & internet setup', 'Basic furniture (bed, sofa, dining)', 'Curtains & interiors'],
+  },
+  {
+    title: 'Buy major appliances',
+    timeframe: 'Post-Wedding',
+    subtasks: ['Refrigerator', 'Washing machine', 'TV', 'Kitchen appliances (mixer, stove, etc.)', 'AC / fans'],
+  },
+  { title: 'Buy kitchen & home essentials (cookware, utensils, linens)', timeframe: 'Post-Wedding' },
+  { title: 'Update address on documents (ID, bank, etc.)', timeframe: 'Post-Wedding' },
+  { title: 'Update bank accounts & nominee details', timeframe: 'Post-Wedding' },
+  { title: 'Plan housewarming function', timeframe: 'Post-Wedding' },
 ]
 
 export default function Tasks() {
