@@ -46,44 +46,80 @@ export default function Shopping() {
 
       <div className="space-y-2">
         {rows.map((item) => (
-          <Card key={item.id} className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="font-medium text-stone-800">{item.item_name}</p>
-              <p className="text-xs text-stone-400">
-                {item.category} {item.store_or_vendor && `· ${item.store_or_vendor}`}{' '}
-                {item.due_date && `· due ${item.due_date}`}
-              </p>
-              {item.cost != null && <p className="text-xs text-stone-400">₹{item.cost.toLocaleString('en-IN')}</p>}
-              {item.notes && <p className="text-xs text-stone-400">{item.notes}</p>}
-            </div>
-            <div className="flex items-center gap-2">
-              <select
-                value={item.status}
-                onChange={(e) => update(item.id, { status: e.target.value as ShoppingStatus })}
-                className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_STYLES[item.status]}`}
-              >
-                <option value="to_do">{STATUS_LABELS.to_do}</option>
-                <option value="in_progress">{STATUS_LABELS.in_progress}</option>
-                <option value="done">{STATUS_LABELS.done}</option>
-              </select>
-              <Button variant="danger" onClick={() => remove(item.id)}>
-                Delete
-              </Button>
-            </div>
-          </Card>
+          <ShoppingRow key={item.id} item={item} onUpdate={update} onRemove={remove} />
         ))}
       </div>
     </div>
   )
 }
 
-function ShoppingForm({ onSave }: { onSave: (v: Partial<ShoppingItem>) => void }) {
-  const [itemName, setItemName] = useState('')
-  const [category, setCategory] = useState(CATEGORIES[0])
-  const [store, setStore] = useState('')
-  const [cost, setCost] = useState('')
-  const [dueDate, setDueDate] = useState('')
-  const [notes, setNotes] = useState('')
+function ShoppingRow({
+  item,
+  onUpdate,
+  onRemove,
+}: {
+  item: ShoppingItem
+  onUpdate: (id: string, v: Partial<ShoppingItem>) => void
+  onRemove: (id: string) => void
+}) {
+  const [editing, setEditing] = useState(false)
+
+  if (editing) {
+    return (
+      <Card>
+        <ShoppingForm
+          initial={item}
+          onSave={(values) => {
+            onUpdate(item.id, values)
+            setEditing(false)
+          }}
+        />
+        <Button variant="secondary" className="mt-2" onClick={() => setEditing(false)}>
+          Cancel
+        </Button>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <p className="font-medium text-stone-800">{item.item_name}</p>
+        <p className="text-xs text-stone-400">
+          {item.category} {item.store_or_vendor && `· ${item.store_or_vendor}`}{' '}
+          {item.due_date && `· due ${item.due_date}`}
+        </p>
+        {item.cost != null && <p className="text-xs text-stone-400">₹{item.cost.toLocaleString('en-IN')}</p>}
+        {item.notes && <p className="text-xs text-stone-400">{item.notes}</p>}
+      </div>
+      <div className="flex items-center gap-2">
+        <select
+          value={item.status}
+          onChange={(e) => onUpdate(item.id, { status: e.target.value as ShoppingStatus })}
+          className={`rounded-full px-2 py-1 text-xs font-medium ${STATUS_STYLES[item.status]}`}
+        >
+          <option value="to_do">{STATUS_LABELS.to_do}</option>
+          <option value="in_progress">{STATUS_LABELS.in_progress}</option>
+          <option value="done">{STATUS_LABELS.done}</option>
+        </select>
+        <Button variant="secondary" onClick={() => setEditing(true)}>
+          Edit
+        </Button>
+        <Button variant="danger" onClick={() => onRemove(item.id)}>
+          Delete
+        </Button>
+      </div>
+    </Card>
+  )
+}
+
+function ShoppingForm({ initial, onSave }: { initial?: ShoppingItem; onSave: (v: Partial<ShoppingItem>) => void }) {
+  const [itemName, setItemName] = useState(initial?.item_name ?? '')
+  const [category, setCategory] = useState(initial?.category ?? CATEGORIES[0])
+  const [store, setStore] = useState(initial?.store_or_vendor ?? '')
+  const [cost, setCost] = useState(String(initial?.cost ?? ''))
+  const [dueDate, setDueDate] = useState(initial?.due_date ?? '')
+  const [notes, setNotes] = useState(initial?.notes ?? '')
 
   return (
     <form
@@ -97,7 +133,7 @@ function ShoppingForm({ onSave }: { onSave: (v: Partial<ShoppingItem>) => void }
           cost: cost ? Number(cost) : null,
           due_date: dueDate || null,
           notes,
-          status: 'to_do',
+          status: initial?.status ?? 'to_do',
         })
       }}
     >

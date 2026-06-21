@@ -56,54 +56,90 @@ export default function Guests() {
 
       <div className="space-y-2">
         {filtered.map((g) => (
-          <Card key={g.id} className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="font-medium text-stone-800">
-                {g.name} {g.plus_one_count > 0 && <span className="text-xs text-stone-400">+{g.plus_one_count}</span>}
-              </p>
-              <p className="text-xs text-stone-400">
-                {g.group_name ?? '—'} · {g.side} side {g.needs_stay && '· 🏨 needs stay'}
-              </p>
-              {g.notes && <p className="text-xs text-stone-400">{g.notes}</p>}
-            </div>
-            <div className="flex items-center gap-2">
-              <label className="flex items-center gap-1 text-xs text-stone-500">
-                <input
-                  type="checkbox"
-                  checked={g.invite_sent}
-                  onChange={(e) => update(g.id, { invite_sent: e.target.checked })}
-                />
-                Invite sent
-              </label>
-              <select
-                value={g.rsvp_status}
-                onChange={(e) => update(g.id, { rsvp_status: e.target.value as RsvpStatus })}
-                className={`rounded-full px-2 py-1 text-xs font-medium ${RSVP_STYLES[g.rsvp_status]}`}
-              >
-                <option value="pending">Pending</option>
-                <option value="yes">Confirmed</option>
-                <option value="no">Declined</option>
-              </select>
-              <Button variant="danger" onClick={() => remove(g.id)}>
-                Delete
-              </Button>
-            </div>
-          </Card>
+          <GuestRow key={g.id} guest={g} onUpdate={update} onRemove={remove} />
         ))}
       </div>
     </div>
   )
 }
 
-function GuestForm({ onSave }: { onSave: (v: Partial<Guest>) => void }) {
-  const [name, setName] = useState('')
-  const [side, setSide] = useState<Side>('both')
-  const [groupName, setGroupName] = useState('')
-  const [plusOne, setPlusOne] = useState('0')
-  const [phone, setPhone] = useState('')
-  const [needsStay, setNeedsStay] = useState(false)
-  const [inviteSent, setInviteSent] = useState(false)
-  const [notes, setNotes] = useState('')
+function GuestRow({
+  guest: g,
+  onUpdate,
+  onRemove,
+}: {
+  guest: Guest
+  onUpdate: (id: string, v: Partial<Guest>) => void
+  onRemove: (id: string) => void
+}) {
+  const [editing, setEditing] = useState(false)
+
+  if (editing) {
+    return (
+      <Card>
+        <GuestForm
+          initial={g}
+          onSave={(values) => {
+            onUpdate(g.id, values)
+            setEditing(false)
+          }}
+        />
+        <Button variant="secondary" className="mt-2" onClick={() => setEditing(false)}>
+          Cancel
+        </Button>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="flex flex-wrap items-center justify-between gap-3">
+      <div>
+        <p className="font-medium text-stone-800">
+          {g.name} {g.plus_one_count > 0 && <span className="text-xs text-stone-400">+{g.plus_one_count}</span>}
+        </p>
+        <p className="text-xs text-stone-400">
+          {g.group_name ?? '—'} · {g.side} side {g.needs_stay && '· 🏨 needs stay'}
+        </p>
+        {g.notes && <p className="text-xs text-stone-400">{g.notes}</p>}
+      </div>
+      <div className="flex items-center gap-2">
+        <label className="flex items-center gap-1 text-xs text-stone-500">
+          <input
+            type="checkbox"
+            checked={g.invite_sent}
+            onChange={(e) => onUpdate(g.id, { invite_sent: e.target.checked })}
+          />
+          Invite sent
+        </label>
+        <select
+          value={g.rsvp_status}
+          onChange={(e) => onUpdate(g.id, { rsvp_status: e.target.value as RsvpStatus })}
+          className={`rounded-full px-2 py-1 text-xs font-medium ${RSVP_STYLES[g.rsvp_status]}`}
+        >
+          <option value="pending">Pending</option>
+          <option value="yes">Confirmed</option>
+          <option value="no">Declined</option>
+        </select>
+        <Button variant="secondary" onClick={() => setEditing(true)}>
+          Edit
+        </Button>
+        <Button variant="danger" onClick={() => onRemove(g.id)}>
+          Delete
+        </Button>
+      </div>
+    </Card>
+  )
+}
+
+function GuestForm({ initial, onSave }: { initial?: Guest; onSave: (v: Partial<Guest>) => void }) {
+  const [name, setName] = useState(initial?.name ?? '')
+  const [side, setSide] = useState<Side>(initial?.side ?? 'both')
+  const [groupName, setGroupName] = useState(initial?.group_name ?? '')
+  const [plusOne, setPlusOne] = useState(String(initial?.plus_one_count ?? '0'))
+  const [phone, setPhone] = useState(initial?.phone ?? '')
+  const [needsStay, setNeedsStay] = useState(initial?.needs_stay ?? false)
+  const [inviteSent, setInviteSent] = useState(initial?.invite_sent ?? false)
+  const [notes, setNotes] = useState(initial?.notes ?? '')
 
   return (
     <form
@@ -119,7 +155,7 @@ function GuestForm({ onSave }: { onSave: (v: Partial<Guest>) => void }) {
           needs_stay: needsStay,
           invite_sent: inviteSent,
           notes,
-          rsvp_status: 'pending',
+          rsvp_status: initial?.rsvp_status ?? 'pending',
         })
       }}
     >
