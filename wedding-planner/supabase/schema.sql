@@ -140,6 +140,15 @@ create table if not exists gifts (
   created_at timestamptz default now()
 );
 
+-- Our story: relationship milestones (first met, asked out, parents met, etc.) with a date for a "days since" counter
+create table if not exists story_milestones (
+  id uuid primary key default gen_random_uuid(),
+  title text not null,
+  milestone_date date,
+  description text,
+  created_at timestamptz default now()
+);
+
 -- Wedding journal: a daily mood entry per person, paired with a comforting quote
 create table if not exists mood_entries (
   id uuid primary key default gen_random_uuid(),
@@ -178,6 +187,7 @@ alter table tasks enable row level security;
 alter table shopping_items enable row level security;
 alter table inspiration_items enable row level security;
 alter table gifts enable row level security;
+alter table story_milestones enable row level security;
 alter table mood_entries enable row level security;
 alter table post_wedding_items enable row level security;
 
@@ -188,7 +198,7 @@ begin
   for t in select unnest(array[
     'wedding_settings','events','budget_items','guests',
     'stay_venues','stay_rooms','stay_assignments','vendors','tasks',
-    'shopping_items','inspiration_items','gifts','mood_entries','post_wedding_items'
+    'shopping_items','inspiration_items','gifts','story_milestones','mood_entries','post_wedding_items'
   ])
   loop
     execute format('drop policy if exists "allow anon full access" on %I', t);

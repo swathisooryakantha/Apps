@@ -126,6 +126,13 @@ export interface Gift {
   notes: string | null
 }
 
+export interface StoryMilestone {
+  id: string
+  title: string
+  milestone_date: string | null
+  description: string | null
+}
+
 export type JournalPerson = 'bride' | 'groom'
 
 export interface MoodEntry {

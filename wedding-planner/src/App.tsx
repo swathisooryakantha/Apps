@@ -12,6 +12,7 @@ import Inspiration from './pages/Inspiration'
 import Gifts from './pages/Gifts'
 import PostWedding from './pages/PostWedding'
 import Journal from './pages/Journal'
+import OurStory from './pages/OurStory'
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="gifts" element={<Gifts />} />
           <Route path="post-wedding" element={<PostWedding />} />
           <Route path="journal" element={<Journal />} />
+          <Route path="our-story" element={<OurStory />} />
         </Route>
       </Routes>
     </BrowserRouter>

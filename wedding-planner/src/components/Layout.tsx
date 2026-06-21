@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { to: '/gifts', label: 'Gifts', icon: '🎁' },
   { to: '/post-wedding', label: 'Post-Wedding', icon: '🏡' },
   { to: '/journal', label: 'Mood Journal', icon: '📓' },
+  { to: '/our-story', label: 'Our Story', icon: '💌' },
 ]
 
 const MOBILE_PRIMARY = NAV_ITEMS.slice(0, 4)
