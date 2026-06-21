@@ -11,9 +11,17 @@ const OWNER_STYLES = 'bg-violet-100 text-violet-700'
 
 const STARTER_TASKS: { title: string; timeframe: string; subtasks?: string[] }[] = [
   { title: 'Fix wedding date with priest / panchangam', timeframe: '12+ months' },
+  { title: 'Set overall wedding budget', timeframe: '12+ months' },
   { title: 'Book muhurtham & reception venues', timeframe: '12+ months' },
+  { title: 'Draft initial guest list', timeframe: '12+ months' },
+  { title: 'Shortlist & book wedding planner/coordinator', timeframe: '12+ months' },
+
   { title: 'Finalize guest list', timeframe: '6-9 months' },
-  { title: 'Book photographer & videographer', timeframe: '6-9 months' },
+  {
+    title: 'Book photographer & videographer',
+    timeframe: '6-9 months',
+    subtasks: ['Pre-wedding shoot', 'Wedding day coverage', 'Drone/cinematic add-on'],
+  },
   { title: 'Book catering (veg/non-veg menu)', timeframe: '6-9 months' },
   { title: 'Saree & blouse shopping', timeframe: '6-9 months' },
   {
@@ -21,15 +29,39 @@ const STARTER_TASKS: { title: string; timeframe: string; subtasks?: string[] }[]
     timeframe: '6-9 months',
     subtasks: ['Ring shopping', 'Necklace', 'Mangalsutra', 'Bangles & earrings'],
   },
-  { title: 'Book mehendi & bridal makeup artist', timeframe: '3-6 months' },
+  { title: 'Book mehendi & bridal makeup artist', timeframe: '6-9 months' },
+  { title: 'Decide wedding theme & color palette', timeframe: '6-9 months' },
+  { title: 'Book decorator / mandap designer', timeframe: '6-9 months' },
+  { title: 'Book live band / DJ / nadaswaram', timeframe: '6-9 months' },
+  { title: 'Design & order wedding invitations', timeframe: '6-9 months' },
+  { title: 'Book groom\'s attire (veshti, sherwani, etc.)', timeframe: '6-9 months' },
+
   { title: 'Send invitations', timeframe: '3-6 months' },
   { title: 'Arrange accommodation for outstation guests', timeframe: '3-6 months' },
+  { title: 'Book transport for guests & families', timeframe: '3-6 months' },
+  { title: 'Menu tasting with caterer', timeframe: '3-6 months' },
+  { title: 'Plan sangeet / haldi / mehendi function', timeframe: '3-6 months' },
+  { title: 'Order return gifts / wedding favors', timeframe: '3-6 months' },
+  { title: 'Book makeup & hair trial', timeframe: '3-6 months' },
+  { title: 'Arrange priest & ritual items (poojai saamagri)', timeframe: '3-6 months' },
+
   { title: 'Blouse stitching & fittings', timeframe: '1-2 months' },
   { title: 'Confirm decor & mandap setup', timeframe: '1-2 months' },
   { title: 'Confirm final headcount with caterer', timeframe: '1-2 months' },
+  { title: 'Finalize seating arrangements', timeframe: '1-2 months' },
+  { title: 'Confirm all vendor contracts & advance payments', timeframe: '1-2 months' },
+  { title: 'Plan honeymoon / post-wedding trip', timeframe: '1-2 months' },
+  { title: 'Apply for marriage certificate / legal paperwork', timeframe: '1-2 months' },
+
   { title: 'Pack for muhurtham & reception', timeframe: 'Week of' },
   { title: 'Hand over schedule to family/coordinators', timeframe: 'Week of' },
+  { title: 'Confirm hair & makeup appointment times', timeframe: 'Week of' },
+  { title: 'Rehearse rituals with priest', timeframe: 'Week of' },
+  { title: 'Collect outfits, jewelry & accessories from vendors', timeframe: 'Week of' },
+
   { title: 'Carry jewelry, documents, return gifts', timeframe: 'Day of' },
+  { title: 'Keep an emergency kit ready (pins, thread, stain remover)', timeframe: 'Day of' },
+  { title: 'Assign a point-of-contact for each vendor', timeframe: 'Day of' },
 ]
 
 export default function Tasks() {
@@ -45,10 +77,17 @@ export default function Tasks() {
 
   async function seedStarterTasks() {
     for (const t of STARTER_TASKS) {
-      const parent = await insert({ title: t.title, timeframe: t.timeframe, done: false })
+      let parent = topLevel.find((r) => r.title.trim().toLowerCase() === t.title.trim().toLowerCase())
+      if (!parent) {
+        parent = (await insert({ title: t.title, timeframe: t.timeframe, done: false })) ?? undefined
+      }
       if (t.subtasks && parent) {
+        const existingChildren = rows.filter((r) => r.parent_id === parent!.id)
         for (const sub of t.subtasks) {
-          await insert({ title: sub, parent_id: parent.id, done: false })
+          const exists = existingChildren.some((c) => c.title.trim().toLowerCase() === sub.trim().toLowerCase())
+          if (!exists) {
+            await insert({ title: sub, parent_id: parent.id, done: false })
+          }
         }
       }
     }
@@ -61,7 +100,7 @@ export default function Tasks() {
         subtitle={`${done} of ${topLevel.length} done`}
         action={
           <div className="flex gap-2">
-            {rows.length === 0 && <Button variant="secondary" onClick={seedStarterTasks}>Load starter checklist</Button>}
+            <Button variant="secondary" onClick={seedStarterTasks}>Load wedding checklist</Button>
             <Button onClick={() => setShowForm((s) => !s)}>{showForm ? 'Close' : '+ Add task'}</Button>
           </div>
         }
@@ -78,7 +117,7 @@ export default function Tasks() {
         </Card>
       )}
 
-      {rows.length === 0 && <EmptyState text="No tasks yet — add your own or load the starter checklist." />}
+      {rows.length === 0 && <EmptyState text="No tasks yet — add your own or load the wedding checklist." />}
 
       <div className="space-y-5">
         {grouped.map(({ tf, items }) => (
