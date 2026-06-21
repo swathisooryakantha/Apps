@@ -13,7 +13,7 @@ function detectPlatform(url: string | null): { label: string; icon: string } | n
 }
 
 export default function Inspiration() {
-  const { rows, insert, remove } = useTable<InspirationItem>('inspiration_items')
+  const { rows, insert, update, remove } = useTable<InspirationItem>('inspiration_items')
   const [showForm, setShowForm] = useState(false)
   const [filter, setFilter] = useState('All')
 
@@ -55,45 +55,85 @@ export default function Inspiration() {
       {filtered.length === 0 && <EmptyState text="No inspiration saved yet." />}
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
-        {filtered.map((item) => {
-          const platform = detectPlatform(item.source_link)
-          return (
-            <Card key={item.id} className="flex flex-col gap-2">
-              {item.image_url && (
-                <img src={item.image_url} alt={item.title} className="aspect-square w-full rounded-lg object-cover" />
-              )}
-              <div>
-                <p className="text-sm font-medium text-stone-800">{item.title}</p>
-                <p className="text-xs text-stone-400">{item.category}</p>
-              </div>
-              {item.source_link && (
-                <a
-                  href={item.source_link}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="inline-flex items-center gap-1 text-xs font-medium text-rose-600 hover:underline"
-                >
-                  {platform?.icon} {platform?.label}
-                </a>
-              )}
-              {item.notes && <p className="text-xs text-stone-400">{item.notes}</p>}
-              <Button variant="danger" onClick={() => remove(item.id)} className="self-start">
-                Delete
-              </Button>
-            </Card>
-          )
-        })}
+        {filtered.map((item) => (
+          <InspirationCard key={item.id} item={item} onUpdate={update} onRemove={remove} />
+        ))}
       </div>
     </div>
   )
 }
 
-function InspirationForm({ onSave }: { onSave: (v: Partial<InspirationItem>) => void }) {
-  const [title, setTitle] = useState('')
-  const [category, setCategory] = useState(CATEGORIES[0])
-  const [imageUrl, setImageUrl] = useState('')
-  const [sourceLink, setSourceLink] = useState('')
-  const [notes, setNotes] = useState('')
+function InspirationCard({
+  item,
+  onUpdate,
+  onRemove,
+}: {
+  item: InspirationItem
+  onUpdate: (id: string, v: Partial<InspirationItem>) => void
+  onRemove: (id: string) => void
+}) {
+  const [editing, setEditing] = useState(false)
+  const platform = detectPlatform(item.source_link)
+
+  if (editing) {
+    return (
+      <Card className="col-span-2 md:col-span-1">
+        <InspirationForm
+          initial={item}
+          onSave={(values) => {
+            onUpdate(item.id, values)
+            setEditing(false)
+          }}
+        />
+        <Button variant="secondary" className="mt-2" onClick={() => setEditing(false)}>
+          Cancel
+        </Button>
+      </Card>
+    )
+  }
+
+  return (
+    <Card className="flex flex-col gap-2">
+      {item.image_url && <img src={item.image_url} alt={item.title} className="aspect-square w-full rounded-lg object-cover" />}
+      <div>
+        <p className="text-sm font-medium text-stone-800">{item.title}</p>
+        <p className="text-xs text-stone-400">{item.category}</p>
+      </div>
+      {item.source_link && (
+        <a
+          href={item.source_link}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-1 text-xs font-medium text-rose-600 hover:underline"
+        >
+          {platform?.icon} {platform?.label}
+        </a>
+      )}
+      {item.notes && <p className="text-xs text-stone-400">{item.notes}</p>}
+      <div className="flex gap-2">
+        <Button variant="secondary" onClick={() => setEditing(true)}>
+          Edit
+        </Button>
+        <Button variant="danger" onClick={() => onRemove(item.id)}>
+          Delete
+        </Button>
+      </div>
+    </Card>
+  )
+}
+
+function InspirationForm({
+  initial,
+  onSave,
+}: {
+  initial?: InspirationItem
+  onSave: (v: Partial<InspirationItem>) => void
+}) {
+  const [title, setTitle] = useState(initial?.title ?? '')
+  const [category, setCategory] = useState(initial?.category ?? CATEGORIES[0])
+  const [imageUrl, setImageUrl] = useState(initial?.image_url ?? '')
+  const [sourceLink, setSourceLink] = useState(initial?.source_link ?? '')
+  const [notes, setNotes] = useState(initial?.notes ?? '')
 
   return (
     <form
