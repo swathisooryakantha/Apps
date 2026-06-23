@@ -1,0 +1,26 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: light;
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --accent: #4f46e5;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  background: linear-gradient(180deg, #f5f6ff 0%, #eef0ff 100%);
+}
+
+#root {
+  min-height: 100svh;
+}
+
+input,
+select,
+textarea,
+button {
+  font-family: inherit;
+}
