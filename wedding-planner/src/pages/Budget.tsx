@@ -147,23 +147,7 @@ function BudgetRow({
       {expanded && hasChildren && (
         <div className="mt-3 ml-5 space-y-2 border-l border-rose-100 pl-3">
           {children.map((c) => (
-            <div key={c.id} className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <p className="text-sm text-stone-700">{c.item_name}</p>
-                {c.notes && <p className="text-xs text-stone-400">{c.notes}</p>}
-              </div>
-              <div className="flex items-center gap-3 text-xs">
-                <span className="text-stone-400">Paid ₹{c.actual_cost.toLocaleString('en-IN')}</span>
-                <label className="flex items-center gap-1 text-stone-500">
-                  <input type="checkbox" checked={c.paid} onChange={(e) => onUpdate(c.id, { paid: e.target.checked })} />
-                  Paid
-                </label>
-                <SubEditButton item={c} onUpdate={onUpdate} />
-                <button onClick={() => onRemove(c.id)} className="text-stone-300 hover:text-red-500">
-                  ×
-                </button>
-              </div>
-            </div>
+            <SubItem key={c.id} item={c} onUpdate={onUpdate} onRemove={onRemove} />
           ))}
         </div>
       )}
@@ -189,30 +173,58 @@ function BudgetRow({
   )
 }
 
-function SubEditButton({ item, onUpdate }: { item: BudgetItem; onUpdate: (id: string, v: Partial<BudgetItem>) => void }) {
+function SubItem({
+  item,
+  onUpdate,
+  onRemove,
+}: {
+  item: BudgetItem
+  onUpdate: (id: string, v: Partial<BudgetItem>) => void
+  onRemove: (id: string) => void
+}) {
   const [editing, setEditing] = useState(false)
 
-  if (!editing) {
+  if (editing) {
     return (
-      <button onClick={() => setEditing(true)} className="text-rose-500 hover:underline">
-        Edit
-      </button>
+      <div className="rounded-xl border border-rose-100 bg-white p-3">
+        <BudgetForm
+          compact
+          initial={item}
+          onSave={(values) => {
+            onUpdate(item.id, values)
+            setEditing(false)
+          }}
+        />
+        <button onClick={() => setEditing(false)} className="mt-1 text-xs text-stone-400 hover:underline">
+          Cancel
+        </button>
+      </div>
     )
   }
 
   return (
-    <div className="absolute z-10 mt-2 w-72 rounded-xl border border-rose-100 bg-white p-3 shadow-lg">
-      <BudgetForm
-        compact
-        initial={item}
-        onSave={(values) => {
-          onUpdate(item.id, values)
-          setEditing(false)
-        }}
-      />
+    <div className="flex flex-wrap items-center justify-between gap-2">
+      <div>
+        <p className="text-sm text-stone-700">{item.item_name}</p>
+        {item.notes && <p className="text-xs text-stone-400">{item.notes}</p>}
+      </div>
+      <div className="flex items-center gap-3 text-xs">
+        <span className="text-stone-400">Paid ₹{item.actual_cost.toLocaleString('en-IN')}</span>
+        <label className="flex items-center gap-1 text-stone-500">
+          <input type="checkbox" checked={item.paid} onChange={(e) => onUpdate(item.id, { paid: e.target.checked })} />
+          Paid
+        </label>
+        <button onClick={() => setEditing(true)} className="text-rose-500 hover:underline">
+          Edit
+        </button>
+        <button onClick={() => onRemove(item.id)} className="text-stone-300 hover:text-red-500">
+          ×
+        </button>
+      </div>
     </div>
   )
 }
+
 
 function BudgetForm({
   initial,
