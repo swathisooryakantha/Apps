@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { format, parseISO } from 'date-fns'
+import { format, parseISO, isPast, isToday } from 'date-fns'
 import { useTable } from '../hooks/useTable'
 import type { EventRow } from '../lib/types'
 import { Button, Card, EmptyState, Input, PageHeader, Textarea } from '../components/ui'
@@ -51,6 +51,8 @@ function EventCard({
 }) {
   const [editing, setEditing] = useState(false)
 
+  const past = event.event_date ? isPast(parseISO(event.event_date)) && !isToday(parseISO(event.event_date)) : false
+
   if (editing) {
     return (
       <Card>
@@ -66,9 +68,15 @@ function EventCard({
   }
 
   return (
-    <Card className="flex items-start justify-between gap-3">
+    <Card className={`flex items-start justify-between gap-3 ${past ? 'opacity-50' : ''}`}>
       <div>
-        <p className="font-semibold text-stone-800">{event.name}</p>
+        <div className="flex items-center gap-2">
+          <p className={`font-semibold ${past ? 'text-stone-400 line-through' : 'text-stone-800'}`}>{event.name}</p>
+          {past && <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs text-stone-400">Done</span>}
+          {isToday(parseISO(event.event_date ?? '9999-01-01')) && (
+            <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs font-medium text-rose-600">Today!</span>
+          )}
+        </div>
         <p className="text-sm text-stone-500">
           {event.event_date ? format(parseISO(event.event_date), 'EEE, MMM d, yyyy') : 'No date set'}
           {event.start_time ? ` · ${event.start_time}${event.end_time ? `–${event.end_time}` : ''}` : ''}
