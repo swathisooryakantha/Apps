@@ -2,7 +2,7 @@
 
 A wedding planning app — budget, multi-function events, guest list, accommodation mapping, vendors, checklist (with sub-tasks and owners), shopping/prep tracker, and a Pinterest/Instagram inspiration board. Installable as a PWA on iPad and Android, with data synced across devices via Supabase.
 
-Anyone can sign in (Google or an emailed link) and create their own wedding. Each wedding's data is private to its members, enforced by Row Level Security in the database.
+Anyone can sign in with an emailed link and create their own wedding. Each wedding's data is private to its members, enforced by Row Level Security in the database.
 
 ## 1. Set up Supabase (free, ~10 minutes)
 
@@ -11,14 +11,9 @@ Use a **new** Supabase project for this version — the schema is not compatible
 1. Create a free project at [supabase.com](https://supabase.com).
 2. Open the **SQL Editor**, paste the contents of `supabase/schema.sql`, and run it. It's safe to run again later.
 3. **Authentication → URL Configuration:** set **Site URL** to where the app will live (e.g. `https://your-app.vercel.app`). Under **Redirect URLs**, add `https://your-app.vercel.app/**` and `http://localhost:5173/**` (the `/**` lets invite links survive sign-in).
-4. **Authentication → Sign In / Providers → Email:** leave it enabled. This powers the "Email me a sign-in link" button. The built-in email sender only allows a few emails per hour, which is fine for a couple; Google sign-in doesn't use email at all.
-5. **Google sign-in (recommended):**
-   1. In [Google Cloud Console](https://console.cloud.google.com/), create a project, then **APIs & Services → OAuth consent screen** (External, add your app name and email).
-   2. **Credentials → Create credentials → OAuth client ID → Web application.** Under **Authorized redirect URIs**, add the callback URL shown in Supabase under **Authentication → Sign In / Providers → Google** (it looks like `https://<project-ref>.supabase.co/auth/v1/callback`).
-   3. Copy the client ID and secret into that Google provider page in Supabase and enable it.
-   4. While the Google app is unverified, people see an "unverified app" notice once — they can continue past it. Verification only matters if the app goes public.
-6. Go to **Project Settings → API** and copy the **Project URL** and **anon public key**.
-7. Copy `.env.example` to `.env` and fill in those two values:
+4. **Authentication → Sign In / Providers → Email:** leave it enabled. This powers the "Email me a sign-in link" button. The built-in email sender only allows a few emails per hour, which is fine for a couple.
+5. Go to **Project Settings → API** and copy the **Project URL** and **anon public key**.
+6. Copy `.env.example` to `.env` and fill in those two values:
    ```
    VITE_SUPABASE_URL=https://your-project-ref.supabase.co
    VITE_SUPABASE_ANON_KEY=your-anon-key

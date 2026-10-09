@@ -1,5 +1,5 @@
 // An invite link looks like https://app.example/?invite=<token>. The token is kept in
-// localStorage while the person signs in (Google and email links return to the site root).
+// localStorage while the person signs in (email sign-in links return to the site root).
 
 const INVITE_PARAM = 'invite'
 const PENDING_INVITE_KEY = 'wedding-planner:pending-invite'

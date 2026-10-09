@@ -12,13 +12,6 @@ export default function Login({ pendingInvite }: { pendingInvite: string | null 
 
   const redirectTo = signInRedirectUrl(pendingInvite)
 
-  const signInWithGoogle = async () => {
-    if (!supabase) return
-    setError(null)
-    const { error } = await supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo } })
-    if (error) setError(error.message)
-  }
-
   const sendMagicLink = async () => {
     if (!supabase || !email.trim()) return
     setSending(true)
@@ -41,23 +34,13 @@ export default function Login({ pendingInvite }: { pendingInvite: string | null 
 
   return (
     <AuthShell
-      title="Wedding Planner"
+      title="Welcome"
       subtitle={
         pendingInvite
           ? "You've been invited to plan a wedding together. Sign in to accept."
-          : 'Plan it together, beautifully. Sign in to get started.'
+          : 'Sign in with your email to start planning. No password needed.'
       }
     >
-      <Button className="w-full" onClick={signInWithGoogle}>
-        Continue with Google
-      </Button>
-
-      <div className="my-4 flex items-center gap-3 text-xs text-stone-400">
-        <span className="h-px flex-1 bg-stone-200" />
-        or
-        <span className="h-px flex-1 bg-stone-200" />
-      </div>
-
       <form
         className="grid gap-2"
         onSubmit={(e) => {
@@ -73,7 +56,7 @@ export default function Login({ pendingInvite }: { pendingInvite: string | null 
           value={email}
           onChange={(e) => setEmail(e.target.value)}
         />
-        <Button type="submit" variant="secondary" disabled={sending}>
+        <Button type="submit" disabled={sending}>
           {sending ? 'Sending…' : 'Email me a sign-in link'}
         </Button>
       </form>
