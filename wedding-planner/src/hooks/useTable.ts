@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { useWedding } from '../context/wedding'
 
-/** Generic CRUD hook backed by a Supabase table, with optimistic local state. */
+/** Generic CRUD hook backed by a Supabase table, scoped to the current wedding, with optimistic local state. */
 export function useTable<T extends { id: string }>(
   table: string,
   orderBy: { column: string; ascending?: boolean } = { column: 'created_at', ascending: true },
@@ -9,20 +10,23 @@ export function useTable<T extends { id: string }>(
   const [rows, setRows] = useState<T[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const weddingId = useWedding().wedding?.id ?? null
 
   const refresh = useCallback(async () => {
-    if (!supabase) {
+    if (!supabase || !weddingId) {
+      setRows([])
       setLoading(false)
       return
     }
     const { data, error } = await supabase
       .from(table)
       .select('*')
+      .eq('wedding_id', weddingId)
       .order(orderBy.column, { ascending: orderBy.ascending ?? true })
     if (error) setError(error.message)
     else setRows((data ?? []) as T[])
     setLoading(false)
-  }, [table, orderBy.column, orderBy.ascending])
+  }, [table, weddingId, orderBy.column, orderBy.ascending])
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- refresh() sets state asynchronously after the Supabase round-trip, not synchronously.
@@ -31,10 +35,10 @@ export function useTable<T extends { id: string }>(
 
   const insert = useCallback(
     async (values: Partial<T>): Promise<T | null> => {
-      if (!supabase) return null
+      if (!supabase || !weddingId) return null
       const { data, error } = await supabase
         .from(table)
-        .insert(values as never)
+        .insert({ ...values, wedding_id: weddingId } as never)
         .select()
         .single()
       if (error) {
@@ -44,7 +48,7 @@ export function useTable<T extends { id: string }>(
       setRows((prev) => [...prev, data as T])
       return data as T
     },
-    [table],
+    [table, weddingId],
   )
 
   const update = useCallback(

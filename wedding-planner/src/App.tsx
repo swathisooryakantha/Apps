@@ -13,8 +13,43 @@ import Gifts from './pages/Gifts'
 import PostWedding from './pages/PostWedding'
 import Journal from './pages/Journal'
 import OurStory from './pages/OurStory'
+import Login from './pages/Login'
+import CreateWedding from './pages/CreateWedding'
+import SessionProvider from './context/SessionProvider'
+import WeddingProvider from './context/WeddingProvider'
+import { useSession } from './context/session'
+import { useWedding } from './context/wedding'
+import { isSupabaseConfigured } from './lib/supabase'
 
 function App() {
+  return (
+    <SessionProvider>
+      <WeddingProvider>
+        <Gate />
+      </WeddingProvider>
+    </SessionProvider>
+  )
+}
+
+/** Signed out → sign-in screen; signed in without a wedding → setup; otherwise the planner. */
+function Gate() {
+  const { session, loading: sessionLoading } = useSession()
+  const { wedding, loading: weddingLoading, error } = useWedding()
+
+  // Without Supabase there is no sign-in; the planner shows its "not configured" banner instead.
+  if (!isSupabaseConfigured) return <Planner />
+  if (sessionLoading || (session && weddingLoading)) {
+    return <p className="flex min-h-svh items-center justify-center text-sm text-stone-400">Loading…</p>
+  }
+  if (!session) return <Login />
+  if (!wedding) {
+    if (error) return <p className="flex min-h-svh items-center justify-center p-4 text-sm text-red-600">{error}</p>
+    return <CreateWedding />
+  }
+  return <Planner />
+}
+
+function Planner() {
   return (
     <BrowserRouter>
       <Routes>

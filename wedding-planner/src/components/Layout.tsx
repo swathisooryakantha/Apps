@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { isSupabaseConfigured } from '../lib/supabase'
+import { isSupabaseConfigured, supabase } from '../lib/supabase'
 import { useWeddingSettings } from '../hooks/useWeddingSettings'
 import { useTable } from '../hooks/useTable'
 import { useDueReminders } from '../hooks/useDueReminders'
@@ -48,7 +48,7 @@ export default function Layout() {
   }, [settings?.theme_color])
 
   useEffect(() => {
-    document.title = coupleNames ? `${coupleNames} — Wedding Planner` : 'Swathvika Wedding'
+    document.title = coupleNames ? `${coupleNames} — Wedding Planner` : 'Wedding Planner'
   }, [coupleNames])
 
   return (
@@ -102,6 +102,15 @@ export default function Layout() {
             {item.label}
           </NavLink>
         ))}
+        {supabase && (
+          <button
+            onClick={() => supabase?.auth.signOut()}
+            className="mt-auto rounded-xl px-3 py-2.5 text-left text-sm font-medium text-stone-400 hover:bg-[var(--accent-50)]"
+          >
+            <span className="mr-2.5">↩</span>
+            Sign out
+          </button>
+        )}
       </aside>
 
       {/* Main content */}
@@ -136,6 +145,14 @@ export default function Layout() {
                 </NavLink>
               ))}
             </div>
+            {supabase && (
+              <button
+                onClick={() => supabase?.auth.signOut()}
+                className="mt-3 w-full rounded-xl py-2.5 text-sm font-medium text-stone-500 bg-stone-100"
+              >
+                Sign out
+              </button>
+            )}
           </div>
         </div>
       )}
