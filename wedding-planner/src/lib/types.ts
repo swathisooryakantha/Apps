@@ -8,6 +8,8 @@ export interface WeddingSettings {
   show_default_photos: boolean
   currency: string
   hidden_sections: string[]
+  theme: string
+  show_decor: boolean
 }
 
 export interface EventRow {

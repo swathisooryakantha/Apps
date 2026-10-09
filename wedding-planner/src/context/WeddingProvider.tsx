@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
 import { deleteAllWeddingPhotos } from '../lib/photos'
+import { themeFor } from '../lib/themes'
 import type { WeddingSettings } from '../lib/types'
 import { useSession } from './session'
 import { WeddingContext } from './wedding'
@@ -68,7 +69,7 @@ export default function WeddingProvider({ children }: { children: ReactNode }) {
   const wedding = weddings.find((w) => w.id === currentId) ?? null
 
   const createWedding = useCallback(
-    async (values: { bride_name: string; groom_name: string; wedding_date: string | null }) => {
+    async (values: { bride_name: string; groom_name: string; wedding_date: string | null; theme?: string }) => {
       if (!supabase) return 'Supabase is not configured.'
       const { data, error } = await supabase.rpc('create_wedding', {
         p_bride_name: values.bride_name,
@@ -76,7 +77,11 @@ export default function WeddingProvider({ children }: { children: ReactNode }) {
         p_wedding_date: values.wedding_date,
       })
       if (error) return error.message
-      await load((data as WeddingSettings).id)
+      const id = (data as WeddingSettings).id
+      if (values.theme) {
+        await supabase.from('weddings').update({ theme: values.theme, theme_color: themeFor(values.theme).accent }).eq('id', id)
+      }
+      await load(id)
       return null
     },
     [load],

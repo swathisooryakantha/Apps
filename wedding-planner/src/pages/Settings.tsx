@@ -8,6 +8,8 @@ import { coupleLabel } from '../lib/couple'
 import { inviteUrl } from '../lib/invite'
 import { STARTER_PHOTOS } from '../lib/photos'
 import { OPTIONAL_SECTIONS } from '../lib/nav'
+import { themeFor } from '../lib/themes'
+import ThemePicker from '../components/ThemePicker'
 import { useWeddingPhotos } from '../hooks/useWeddingPhotos'
 import type { WeddingInvite, WeddingMember } from '../lib/types'
 import { Button, Card, Input, PageHeader, Select } from '../components/ui'
@@ -84,6 +86,7 @@ export default function Settings() {
         </Card>
       )}
 
+      <ThemeCard />
       <PhotosCard />
       <SectionsCard />
       <div id="invite" className="scroll-mt-4">
@@ -174,6 +177,39 @@ function PhotosCard() {
         )}
 
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      </Card>
+    </div>
+  )
+}
+
+function ThemeCard() {
+  const { wedding, save } = useWedding()
+  const current = themeFor(wedding?.theme)
+
+  return (
+    <div id="theme" className="scroll-mt-4">
+      <Card className="mb-4">
+        <h2 className="text-sm font-semibold text-stone-600">Theme</h2>
+        <p className="mb-3 text-xs text-stone-400">Pick your vibe. It changes the colors, fonts and background for both of you.</p>
+        <ThemePicker
+          value={current.id}
+          onChange={(id) => save({ theme: id, theme_color: themeFor(id).accent })}
+        />
+        {current.motif && (
+          <label className="mt-3 flex items-center gap-3 rounded-lg bg-[var(--accent-50)] p-3 text-sm">
+            <input
+              type="checkbox"
+              className="h-4 w-4 accent-[var(--accent-600)]"
+              checked={wedding?.show_decor ?? true}
+              onChange={(e) => save({ show_decor: e.target.checked })}
+            />
+            <span>
+              <span className="font-medium">Show {current.motif === 'kolam' ? 'kolam' : 'background'} decorations</span>
+              <span className="block text-xs text-stone-400">The subtle pattern behind pages and the divider on the dashboard.</span>
+            </span>
+          </label>
+        )}
+        <p className="mt-2 text-xs text-stone-400">Fine-tune the accent color any time from Dashboard → Edit details.</p>
       </Card>
     </div>
   )

@@ -8,7 +8,7 @@ export interface WeddingState {
   weddings: WeddingSettings[]
   loading: boolean
   error: string | null
-  createWedding: (values: { bride_name: string; groom_name: string; wedding_date: string | null }) => Promise<string | null>
+  createWedding: (values: { bride_name: string; groom_name: string; wedding_date: string | null; theme?: string }) => Promise<string | null>
   /** Accepts an invite token; resolves to an error message, or null on success. */
   joinWedding: (token: string) => Promise<string | null>
   leaveWedding: () => Promise<string | null>

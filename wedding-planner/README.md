@@ -73,6 +73,15 @@ Open **Settings** (in the sidebar, or **More** on a phone) to invite your partne
 
 A wedding can have two co-owners. Either can leave (the wedding stays with the other) or delete the wedding after typing its name. **Export my data** downloads everything as a JSON backup.
 
+## Make it yours
+
+- **Theme:** Settings → Theme. Six vibes (Blush Romance, Temple Gold, Sage Garden, Royal Navy, Minimal Ivory, Midnight); each changes colors, fonts and background. Kolam/floral decorations can be turned off.
+- **Sections:** Settings → Sections hides parts of the app you don't need (nothing is deleted).
+- **Currency:** Dashboard → Edit details.
+- **Journal privacy:** tick 🔒 Private on an entry to keep it to yourself.
+
+When the app is updated with new database fields, run `supabase/schema.sql` again in the SQL Editor — it's safe to re-run.
+
 ## Features
 
 - **Dashboard** — countdown, budget summary, guest/vendor/task stats.

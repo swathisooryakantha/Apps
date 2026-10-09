@@ -7,6 +7,8 @@ import { Card, Input, PageHeader, ProgressBar, Button, Select } from '../compone
 import { CURRENCIES } from '../lib/money'
 import PhotoBanner from '../components/PhotoBanner'
 import InvitePartnerPrompt from '../components/InvitePartnerPrompt'
+import KolamDivider from '../components/KolamDivider'
+import { themeFor } from '../lib/themes'
 
 export default function Dashboard() {
   const { settings, save } = useWeddingSettings()
@@ -37,6 +39,7 @@ export default function Dashboard() {
   return (
     <div>
       <PhotoBanner />
+      {settings?.show_decor !== false && themeFor(settings?.theme).motif && <KolamDivider />}
 
       <PageHeader
         title={

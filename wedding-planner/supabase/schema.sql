@@ -28,6 +28,10 @@ alter table weddings add column if not exists currency text not null default 'IN
 -- Optional sections the couple has hidden from the menu (paths like '/stay').
 alter table weddings add column if not exists hidden_sections text[] not null default '{}';
 
+-- Visual theme (blush, temple, sage, navy, ivory, midnight) and whether its kolam/floral decorations show.
+alter table weddings add column if not exists theme text not null default 'blush';
+alter table weddings add column if not exists show_decor boolean not null default true;
+
 create table if not exists wedding_members (
   wedding_id uuid not null references weddings(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,

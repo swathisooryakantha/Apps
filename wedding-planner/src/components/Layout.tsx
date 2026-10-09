@@ -7,6 +7,7 @@ import { useDueReminders } from '../hooks/useDueReminders'
 import { getNotificationPermission, notificationsSupported, requestNotificationPermission } from '../lib/notifications'
 import type { EventRow, Task } from '../lib/types'
 import { MOBILE_PRIMARY_PATHS, visibleGroups } from '../lib/nav'
+import { applyTheme, themeFor } from '../lib/themes'
 
 
 export default function Layout() {
@@ -32,8 +33,8 @@ export default function Layout() {
       : null
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--accent', settings?.theme_color || '#e11d48')
-  }, [settings?.theme_color])
+    applyTheme(themeFor(settings?.theme), settings?.theme_color, settings?.show_decor ?? true)
+  }, [settings?.theme, settings?.theme_color, settings?.show_decor])
 
   useEffect(() => {
     document.title = coupleNames ? `${coupleNames} — Wedding Planner` : 'Wedding Planner'
