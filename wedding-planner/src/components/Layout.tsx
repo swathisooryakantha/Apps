@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router-dom'
-import { isSupabaseConfigured, supabase } from '../lib/supabase'
+import { isSupabaseConfigured, signOut, supabase } from '../lib/supabase'
 import { useWeddingSettings } from '../hooks/useWeddingSettings'
 import { useTable } from '../hooks/useTable'
 import { useDueReminders } from '../hooks/useDueReminders'
@@ -102,7 +102,7 @@ export default function Layout() {
         ))}
         {supabase && (
           <button
-            onClick={() => supabase?.auth.signOut()}
+            onClick={() => signOut()}
             className="mt-auto rounded-xl px-3 py-2.5 text-left text-sm font-medium text-stone-400 hover:bg-[var(--accent-50)]"
           >
             <span className="mr-2.5">↩</span>
@@ -145,7 +145,7 @@ export default function Layout() {
             </div>
             {supabase && (
               <button
-                onClick={() => supabase?.auth.signOut()}
+                onClick={() => signOut()}
                 className="mt-3 w-full rounded-xl py-2.5 text-sm font-medium text-stone-500 bg-stone-100"
               >
                 Sign out

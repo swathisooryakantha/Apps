@@ -8,3 +8,8 @@ export const isSupabaseConfigured = Boolean(url && anonKey)
 export const supabase = isSupabaseConfigured
   ? createClient(url as string, anonKey as string)
   : null
+
+/** Signs out on this device only; the same account stays signed in on the person's other devices. */
+export function signOut() {
+  return supabase?.auth.signOut({ scope: 'local' })
+}

@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { signOut } from '../lib/supabase'
 import { useWedding } from '../context/wedding'
 import AuthShell from '../components/AuthShell'
 import { Button, Input } from '../components/ui'
@@ -45,7 +45,7 @@ export default function CreateWedding() {
         </Button>
         {error && <p className="text-sm text-red-600">{error}</p>}
       </form>
-      <button className="mt-4 w-full text-center text-xs text-stone-400 underline" onClick={() => supabase?.auth.signOut()}>
+      <button className="mt-4 w-full text-center text-xs text-stone-400 underline" onClick={() => signOut()}>
         Sign out
       </button>
     </AuthShell>

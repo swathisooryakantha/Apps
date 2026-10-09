@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { supabase } from '../lib/supabase'
+import { signOut, supabase } from '../lib/supabase'
 import { useWedding } from '../context/wedding'
 import { useSession } from '../context/session'
 import { coupleLabel } from '../lib/couple'
@@ -69,7 +69,7 @@ export default function JoinWedding({ token, onDone }: { token: string; onDone: 
       <AuthShell title={title} subtitle={message}>
         <div className="grid gap-2">
           {preview.status === 'wrong_email' && (
-            <Button onClick={() => supabase?.auth.signOut()}>Sign out</Button>
+            <Button onClick={() => signOut()}>Sign out</Button>
           )}
           <Button variant="secondary" onClick={onDone}>
             Continue without joining
