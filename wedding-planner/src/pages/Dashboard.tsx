@@ -2,14 +2,13 @@ import { useState } from 'react'
 import { differenceInCalendarDays, format, parseISO } from 'date-fns'
 import { useTable } from '../hooks/useTable'
 import { useWeddingSettings } from '../hooks/useWeddingSettings'
-import type { BudgetItem, Guest, Task, WeddingSettings, EventRow, Vendor } from '../lib/types'
+import type { Guest, Task, WeddingSettings, EventRow, Vendor } from '../lib/types'
 import { Card, Input, PageHeader, ProgressBar, Button } from '../components/ui'
 import PhotoBanner from '../components/PhotoBanner'
 
 export default function Dashboard() {
   const { settings, save } = useWeddingSettings()
   const [editing, setEditing] = useState(false)
-  const { rows: budget } = useTable<BudgetItem>('budget_items')
   const { rows: guests } = useTable<Guest>('guests')
   const { rows: tasks } = useTable<Task>('tasks')
   const { rows: events } = useTable<EventRow>('events', { column: 'event_date' })
@@ -24,8 +23,6 @@ export default function Dashboard() {
     ? differenceInCalendarDays(parseISO(settings.wedding_date), new Date())
     : null
 
-  const spent = budget.reduce((s, b) => s + (b.actual_cost || 0), 0)
-  const totalBudget = settings?.total_budget || 0
   const confirmedGuests = guests.filter((g) => g.rsvp_status === 'yes')
   const headcount = confirmedGuests.reduce((s, g) => s + 1 + (g.plus_one_count || 0), 0)
   const tasksDone = tasks.filter((t) => t.done).length
@@ -108,15 +105,6 @@ export default function Dashboard() {
         </Card>
       )}
 
-      <Card className="mt-4">
-        <h2 className="mb-2 text-sm font-semibold text-stone-600">Budget</h2>
-        <p className="text-lg font-semibold">
-          ₹{spent.toLocaleString('en-IN')} <span className="text-sm font-normal text-stone-400">of ₹{totalBudget.toLocaleString('en-IN')}</span>
-        </p>
-        <div className="mt-2">
-          <ProgressBar value={totalBudget ? (spent / totalBudget) * 100 : 0} />
-        </div>
-      </Card>
     </div>
   )
 }
@@ -142,7 +130,6 @@ function SettingsForm({
   const [brideName, setBrideName] = useState(settings?.bride_name ?? '')
   const [groomName, setGroomName] = useState(settings?.groom_name ?? '')
   const [weddingDate, setWeddingDate] = useState(settings?.wedding_date ?? '')
-  const [totalBudget, setTotalBudget] = useState(String(settings?.total_budget ?? ''))
   const [themeColor, setThemeColor] = useState(settings?.theme_color ?? '#e11d48')
 
   return (
@@ -154,7 +141,6 @@ function SettingsForm({
           bride_name: brideName,
           groom_name: groomName,
           wedding_date: weddingDate || null,
-          total_budget: Number(totalBudget) || 0,
           theme_color: themeColor,
         })
       }}
@@ -170,15 +156,6 @@ function SettingsForm({
       <label className="text-sm text-stone-500">
         Wedding date
         <Input className="mt-1" type="date" value={weddingDate} onChange={(e) => setWeddingDate(e.target.value)} />
-      </label>
-      <label className="text-sm text-stone-500">
-        Total budget (₹)
-        <Input
-          className="mt-1"
-          type="number"
-          value={totalBudget}
-          onChange={(e) => setTotalBudget(e.target.value)}
-        />
       </label>
       <div className="text-sm text-stone-500 md:col-span-2">
         Theme color

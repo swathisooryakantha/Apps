@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTable } from '../hooks/useTable'
+import { useWeddingSettings } from '../hooks/useWeddingSettings'
 import type { BudgetItem, BudgetSide } from '../lib/types'
 import { totals } from '../lib/budget'
 import { Button, Card, EmptyState, Input, PageHeader, ProgressBar, Select, Textarea } from '../components/ui'
@@ -28,6 +29,8 @@ export default function Budget() {
         action={<Button onClick={() => setShowForm((s) => !s)}>{showForm ? 'Close' : '+ Add expense'}</Button>}
       />
 
+      <BudgetSummary spent={totalActual} />
+
       {showForm && (
         <Card className="mb-4">
           <BudgetForm
@@ -47,6 +50,74 @@ export default function Budget() {
         ))}
       </div>
     </div>
+  )
+}
+
+/** Overall budget vs. what's been spent so far; the total is set right here. */
+function BudgetSummary({ spent }: { spent: number }) {
+  const { settings, save } = useWeddingSettings()
+  const totalBudget = settings?.total_budget || 0
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState('')
+  const remaining = totalBudget - spent
+
+  return (
+    <Card className="mb-4">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <h2 className="text-sm font-semibold text-stone-600">Overall budget</h2>
+          {totalBudget ? (
+            <p className="text-lg font-semibold">
+              ₹{spent.toLocaleString('en-IN')}{' '}
+              <span className="text-sm font-normal text-stone-400">spent of ₹{totalBudget.toLocaleString('en-IN')}</span>
+            </p>
+          ) : (
+            <p className="text-sm text-stone-400">Set a total to track how much is left.</p>
+          )}
+        </div>
+        {!editing && (
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setDraft(totalBudget ? String(totalBudget) : '')
+              setEditing(true)
+            }}
+          >
+            {totalBudget ? 'Edit total' : 'Set total'}
+          </Button>
+        )}
+      </div>
+
+      {editing && (
+        <form
+          className="mt-3 flex gap-2"
+          onSubmit={async (e) => {
+            e.preventDefault()
+            await save({ total_budget: Number(draft) || 0 })
+            setEditing(false)
+          }}
+        >
+          <Input type="number" min="0" placeholder="Total budget (₹)" value={draft} onChange={(e) => setDraft(e.target.value)} autoFocus />
+          <Button type="submit">Save</Button>
+          <Button variant="secondary" onClick={() => setEditing(false)}>
+            Cancel
+          </Button>
+        </form>
+      )}
+
+      {totalBudget > 0 && (
+        <>
+          <div className="mt-2">
+            <ProgressBar value={(spent / totalBudget) * 100} />
+          </div>
+          <p className={`mt-1 text-xs ${remaining < 0 ? 'text-red-600' : 'text-stone-400'}`}>
+            {remaining < 0
+              ? `₹${Math.abs(remaining).toLocaleString('en-IN')} over budget`
+              : `₹${remaining.toLocaleString('en-IN')} left`}
+          </p>
+        </>
+      )}
+    </Card>
   )
 }
 
