@@ -10,7 +10,7 @@ Use a **new** Supabase project for this version — the schema is not compatible
 
 1. Create a free project at [supabase.com](https://supabase.com).
 2. Open the **SQL Editor**, paste the contents of `supabase/schema.sql`, and run it. It's safe to run again later.
-3. **Authentication → URL Configuration:** set **Site URL** to where the app will live (e.g. `https://your-app.vercel.app`), and add `http://localhost:5173` under **Redirect URLs** for local testing.
+3. **Authentication → URL Configuration:** set **Site URL** to where the app will live (e.g. `https://your-app.vercel.app`). Under **Redirect URLs**, add `https://your-app.vercel.app/**` and `http://localhost:5173/**` (the `/**` lets invite links survive sign-in).
 4. **Authentication → Sign In / Providers → Email:** leave it enabled. This powers the "Email me a sign-in link" button. The built-in email sender only allows a few emails per hour, which is fine for a couple; Google sign-in doesn't use email at all.
 5. **Google sign-in (recommended):**
    1. In [Google Cloud Console](https://console.cloud.google.com/), create a project, then **APIs & Services → OAuth consent screen** (External, add your app name and email).
@@ -58,6 +58,16 @@ Then deploy the `dist/` folder, or connect the repo directly to Vercel/Netlify a
 1. Open the deployed URL in Chrome.
 2. Tap the **⋮** menu → **Add to Home screen** / **Install app**.
 3. Confirm — it installs like a native app.
+
+## Planning together
+
+Open **Settings** (in the sidebar, or **More** on a phone) to invite your partner:
+
+1. Enter their email (recommended — only that email can use the link) and tap **Create invite link**.
+2. Send the link by WhatsApp, text, or **Email it**. It works once and expires after 7 days.
+3. They open it, sign in, and tap **Join wedding**. You're now co-owners with equal access.
+
+A wedding can have two co-owners. Either can leave (the wedding stays with the other) or delete the wedding after typing its name. **Export my data** downloads everything as a JSON backup.
 
 ## Features
 

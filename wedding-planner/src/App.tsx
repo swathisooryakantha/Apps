@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import Dashboard from './pages/Dashboard'
@@ -15,11 +16,14 @@ import Journal from './pages/Journal'
 import OurStory from './pages/OurStory'
 import Login from './pages/Login'
 import CreateWedding from './pages/CreateWedding'
+import JoinWedding from './pages/JoinWedding'
+import Settings from './pages/Settings'
 import SessionProvider from './context/SessionProvider'
 import WeddingProvider from './context/WeddingProvider'
 import { useSession } from './context/session'
 import { useWedding } from './context/wedding'
 import { isSupabaseConfigured } from './lib/supabase'
+import { captureInviteFromUrl, clearPendingInvite } from './lib/invite'
 
 function App() {
   return (
@@ -31,17 +35,29 @@ function App() {
   )
 }
 
-/** Signed out → sign-in screen; signed in without a wedding → setup; otherwise the planner. */
+/** Signed out → sign-in; arrived via invite link → join; no wedding yet → setup; otherwise the planner. */
 function Gate() {
   const { session, loading: sessionLoading } = useSession()
   const { wedding, loading: weddingLoading, error } = useWedding()
+  const [pendingInvite, setPendingInvite] = useState(captureInviteFromUrl)
 
   // Without Supabase there is no sign-in; the planner shows its "not configured" banner instead.
   if (!isSupabaseConfigured) return <Planner />
   if (sessionLoading || (session && weddingLoading)) {
     return <p className="flex min-h-svh items-center justify-center text-sm text-stone-400">Loading…</p>
   }
-  if (!session) return <Login />
+  if (!session) return <Login pendingInvite={pendingInvite} />
+  if (pendingInvite) {
+    return (
+      <JoinWedding
+        token={pendingInvite}
+        onDone={() => {
+          clearPendingInvite()
+          setPendingInvite(null)
+        }}
+      />
+    )
+  }
   if (!wedding) {
     if (error) return <p className="flex min-h-svh items-center justify-center p-4 text-sm text-red-600">{error}</p>
     return <CreateWedding />
@@ -67,6 +83,7 @@ function Planner() {
           <Route path="post-wedding" element={<PostWedding />} />
           <Route path="journal" element={<Journal />} />
           <Route path="our-story" element={<OurStory />} />
+          <Route path="settings" element={<Settings />} />
         </Route>
       </Routes>
     </BrowserRouter>

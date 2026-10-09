@@ -2,14 +2,15 @@ import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 import AuthShell from '../components/AuthShell'
 import { Button, Input } from '../components/ui'
+import { signInRedirectUrl } from '../lib/invite'
 
-export default function Login() {
+export default function Login({ pendingInvite }: { pendingInvite: string | null }) {
   const [email, setEmail] = useState('')
   const [sending, setSending] = useState(false)
   const [sentTo, setSentTo] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  const redirectTo = window.location.origin
+  const redirectTo = signInRedirectUrl(pendingInvite)
 
   const signInWithGoogle = async () => {
     if (!supabase) return
@@ -39,7 +40,14 @@ export default function Login() {
   }
 
   return (
-    <AuthShell title="Wedding Planner" subtitle="Plan it together, beautifully. Sign in to get started.">
+    <AuthShell
+      title="Wedding Planner"
+      subtitle={
+        pendingInvite
+          ? "You've been invited to plan a wedding together. Sign in to accept."
+          : 'Plan it together, beautifully. Sign in to get started.'
+      }
+    >
       <Button className="w-full" onClick={signInWithGoogle}>
         Continue with Google
       </Button>

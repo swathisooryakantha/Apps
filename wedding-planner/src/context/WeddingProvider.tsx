@@ -22,40 +22,49 @@ function rememberWeddingId(id: string) {
   }
 }
 
-/** Loads the wedding the signed-in user plans in. Row Level Security limits the query to their own weddings. */
+/** Loads the weddings the signed-in user plans in. Row Level Security limits the query to their own weddings. */
 export default function WeddingProvider({ children }: { children: ReactNode }) {
   const { session } = useSession()
   const userId = session?.user.id ?? null
-  const [wedding, setWedding] = useState<WeddingSettings | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [weddings, setWeddings] = useState<WeddingSettings[]>([])
+  const [currentId, setCurrentId] = useState<string | null>(null)
+  // Which user's weddings are loaded; later reloads (after joining, leaving…) happen quietly in the background.
+  const [loadedFor, setLoadedFor] = useState<string | null | undefined>(undefined)
   const [error, setError] = useState<string | null>(null)
+  const loading = Boolean(supabase) && loadedFor !== userId
 
-  const load = useCallback(async () => {
-    if (!supabase || !userId) {
-      setWedding(null)
-      setLoading(false)
-      return
-    }
-    setLoading(true)
-    const { data, error } = await supabase.from('weddings').select('*').order('created_at')
-    if (error) {
-      setError(error.message)
-      setLoading(false)
-      return
-    }
-    const weddings = (data ?? []) as WeddingSettings[]
-    const lastId = readLastWeddingId()
-    const current = weddings.find((w) => w.id === lastId) ?? weddings[0] ?? null
-    if (current) rememberWeddingId(current.id)
-    setWedding(current)
-    setError(null)
-    setLoading(false)
-  }, [userId])
+  const load = useCallback(
+    async (preferredId?: string) => {
+      if (!supabase || !userId) {
+        setWeddings([])
+        setCurrentId(null)
+        setLoadedFor(null)
+        return
+      }
+      const { data, error } = await supabase.from('weddings').select('*').order('created_at')
+      if (error) {
+        setError(error.message)
+        setLoadedFor(userId)
+        return
+      }
+      const list = (data ?? []) as WeddingSettings[]
+      const wantedId = preferredId ?? readLastWeddingId()
+      const current = list.find((w) => w.id === wantedId) ?? list[0] ?? null
+      if (current) rememberWeddingId(current.id)
+      setWeddings(list)
+      setCurrentId(current?.id ?? null)
+      setError(null)
+      setLoadedFor(userId)
+    },
+    [userId],
+  )
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- load() sets state asynchronously after the Supabase round-trip, not synchronously.
     load()
   }, [load])
+
+  const wedding = weddings.find((w) => w.id === currentId) ?? null
 
   const createWedding = useCallback(
     async (values: { bride_name: string; groom_name: string; wedding_date: string | null }) => {
@@ -66,26 +75,59 @@ export default function WeddingProvider({ children }: { children: ReactNode }) {
         p_wedding_date: values.wedding_date,
       })
       if (error) return error.message
-      const created = data as WeddingSettings
-      rememberWeddingId(created.id)
-      setWedding(created)
+      await load((data as WeddingSettings).id)
       return null
     },
-    [],
+    [load],
   )
+
+  const joinWedding = useCallback(
+    async (token: string) => {
+      if (!supabase) return 'Supabase is not configured.'
+      const { data, error } = await supabase.rpc('accept_invite', { p_token: token })
+      if (error) return error.message
+      await load(data as string)
+      return null
+    },
+    [load],
+  )
+
+  const leaveWedding = useCallback(async () => {
+    if (!supabase || !currentId) return 'No wedding selected.'
+    const { error } = await supabase.rpc('leave_wedding', { p_wedding_id: currentId })
+    if (error) return error.message
+    await load()
+    return null
+  }, [currentId, load])
+
+  const deleteWedding = useCallback(async () => {
+    if (!supabase || !currentId) return 'No wedding selected.'
+    const { data, error } = await supabase.from('weddings').delete().eq('id', currentId).select('id')
+    if (error) return error.message
+    if (!data?.length) return "This wedding couldn't be deleted."
+    await load()
+    return null
+  }, [currentId, load])
+
+  const selectWedding = useCallback((id: string) => {
+    rememberWeddingId(id)
+    setCurrentId(id)
+  }, [])
 
   const save = useCallback(
     async (values: Partial<WeddingSettings>) => {
-      if (!supabase || !wedding) return
-      setWedding({ ...wedding, ...values })
-      const { error } = await supabase.from('weddings').update(values).eq('id', wedding.id)
+      if (!supabase || !currentId) return
+      setWeddings((prev) => prev.map((w) => (w.id === currentId ? { ...w, ...values } : w)))
+      const { error } = await supabase.from('weddings').update(values).eq('id', currentId)
       if (error) setError(error.message)
     },
-    [wedding],
+    [currentId],
   )
 
   return (
-    <WeddingContext.Provider value={{ wedding, loading, error, createWedding, save }}>
+    <WeddingContext.Provider
+      value={{ wedding, weddings, loading, error, createWedding, joinWedding, leaveWedding, deleteWedding, selectWedding, save }}
+    >
       {children}
     </WeddingContext.Provider>
   )

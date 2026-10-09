@@ -154,3 +154,24 @@ export interface PostWeddingItem {
   owner: string | null
   notes: string | null
 }
+
+export interface WeddingMember {
+  wedding_id: string
+  user_id: string
+  role: 'owner'
+  email: string | null
+  display_name: string | null
+  created_at: string
+}
+
+export interface WeddingInvite {
+  id: string
+  wedding_id: string
+  token: string
+  email: string | null
+  expires_at: string
+  accepted_at: string | null
+  created_at: string
+}
+
+export type InviteStatus = 'valid' | 'expired' | 'used' | 'wrong_email' | 'full' | 'already_member' | 'not_found'
