@@ -47,6 +47,13 @@ npm run build
 
 Then deploy the `dist/` folder, or connect the repo directly to Vercel/Netlify and set the same two `VITE_SUPABASE_*` environment variables in their dashboard.
 
+**Vercel, step by step:**
+
+1. **Add New → Project**, import this repo, set **Root Directory** to `wedding-planner` (framework: Vite), and add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for Production and Preview. Deploy.
+2. Vercel's first build uses the repo's default branch. To deploy another branch, either set it under **Settings → Environments → Production → Branch Tracking**, or use the branch's own link (`<project>-git-<branch>-<team>.vercel.app`), which updates on every push to that branch.
+3. If you use a branch link, turn off **Settings → Deployment Protection → Vercel Authentication** so people can open it without a Vercel account.
+4. Put the app's URL in Supabase **Authentication → URL Configuration** (Site URL, plus `https://<url>/**` under Redirect URLs).
+
 ## 4. Install on iPad (Safari)
 
 1. Open the deployed URL in Safari.
