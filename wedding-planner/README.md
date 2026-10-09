@@ -67,6 +67,8 @@ Open **Settings** (in the sidebar, or **More** on a phone) to invite your partne
 2. Send the link by WhatsApp, text, or **Email it**. It works once and expires after 7 days.
 3. They open it, sign in, and tap **Join wedding**. You're now co-owners with equal access.
 
+**Dashboard photos:** the slideshow starts with illustrated scenes. Tap **Change photos** to add your own (stored privately — only co-owners can see them) and, if you like, turn the illustrations off.
+
 A wedding can have two co-owners. Either can leave (the wedding stays with the other) or delete the wedding after typing its name. **Export my data** downloads everything as a JSON backup.
 
 ## Features

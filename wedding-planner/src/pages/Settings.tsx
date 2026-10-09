@@ -1,10 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { format, parseISO } from 'date-fns'
 import { supabase } from '../lib/supabase'
 import { useSession } from '../context/session'
 import { useWedding } from '../context/wedding'
 import { coupleLabel } from '../lib/couple'
 import { inviteUrl } from '../lib/invite'
+import { STARTER_PHOTOS } from '../lib/photos'
+import { useWeddingPhotos } from '../hooks/useWeddingPhotos'
 import type { WeddingInvite, WeddingMember } from '../lib/types'
 import { Button, Card, Input, PageHeader, Select } from '../components/ui'
 
@@ -74,9 +77,101 @@ export default function Settings() {
         </Card>
       )}
 
+      <PhotosCard />
       <MembersCard members={members} invite={invite} onChange={refresh} />
       <ExportCard />
       <DangerCard soleOwner={members.length <= 1} />
+    </div>
+  )
+}
+
+function PhotosCard() {
+  const { wedding, save } = useWedding()
+  const { photos, loading, error, upload, remove } = useWeddingPhotos()
+  const [uploading, setUploading] = useState(false)
+  const fileInput = useRef<HTMLInputElement>(null)
+  const ref = useRef<HTMLDivElement>(null)
+  const location = useLocation()
+  const showStarters = wedding?.show_default_photos ?? true
+
+  // "Change photos" on the dashboard links here.
+  useEffect(() => {
+    if (location.hash === '#photos') ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [location.hash])
+
+  return (
+    <div ref={ref} id="photos" className="scroll-mt-4">
+      <Card className="mb-4">
+        <h2 className="text-sm font-semibold text-stone-600">Dashboard photos</h2>
+        <p className="mb-3 text-xs text-stone-400">
+          Add your own photos to the dashboard slideshow. They're private to you and your co-owner.
+        </p>
+
+        <div className="grid grid-cols-3 gap-2 md:grid-cols-5">
+          {photos.map((p) => (
+            <div key={p.path} className="relative aspect-square overflow-hidden rounded-lg bg-stone-100">
+              <img src={p.url} alt="" className="h-full w-full object-cover" />
+              <button
+                onClick={() => window.confirm('Remove this photo?') && remove(p.path)}
+                className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/50 text-xs text-white"
+                aria-label="Remove photo"
+              >
+                ✕
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() => fileInput.current?.click()}
+            disabled={uploading}
+            className="flex aspect-square flex-col items-center justify-center rounded-lg border-2 border-dashed border-[var(--accent-100)] text-xs font-medium text-[var(--accent-700)] hover:bg-[var(--accent-50)] disabled:opacity-50"
+          >
+            <span className="text-2xl leading-none">+</span>
+            {uploading ? 'Uploading…' : 'Add photos'}
+          </button>
+        </div>
+        <input
+          ref={fileInput}
+          type="file"
+          accept="image/*"
+          multiple
+          hidden
+          onChange={async (e) => {
+            const files = Array.from(e.target.files ?? [])
+            e.target.value = ''
+            if (!files.length) return
+            setUploading(true)
+            await upload(files)
+            setUploading(false)
+          }}
+        />
+        {!loading && photos.length === 0 && <p className="mt-2 text-xs text-stone-400">No photos of your own yet.</p>}
+
+        <label className="mt-4 flex items-start gap-3 rounded-lg bg-[var(--accent-50)] p-3 text-sm">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 accent-[var(--accent-600)]"
+            checked={showStarters}
+            onChange={(e) => save({ show_default_photos: e.target.checked })}
+          />
+          <span>
+            <span className="font-medium">Show the starter illustrations</span>
+            <span className="block text-xs text-stone-400">
+              {photos.length
+                ? 'Turn off to show only your own photos.'
+                : 'Shown alongside your photos. With no photos of your own, they always show.'}
+            </span>
+          </span>
+        </label>
+        {showStarters && (
+          <div className="mt-2 flex gap-1 overflow-x-auto">
+            {STARTER_PHOTOS.map((src) => (
+              <img key={src} src={src} alt="" className="h-14 w-11 shrink-0 rounded object-cover" />
+            ))}
+          </div>
+        )}
+
+        {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      </Card>
     </div>
   )
 }
@@ -307,7 +402,7 @@ function DangerCard({ soleOwner }: { soleOwner: boolean }) {
 
       <div className="mt-4">
         <p className="mb-2 text-xs text-stone-400">
-          Deleting permanently removes this wedding and everything in it{soleOwner ? '' : ' for both co-owners'}. This can't be
+          Deleting permanently removes this wedding and everything in it, including photos{soleOwner ? '' : ' for both co-owners'}. This can't be
           undone — export your data first if you want a copy. Type <strong className="text-stone-600">{name}</strong> to
           confirm.
         </p>

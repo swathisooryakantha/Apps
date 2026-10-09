@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { supabase } from '../lib/supabase'
+import { deleteAllWeddingPhotos } from '../lib/photos'
 import type { WeddingSettings } from '../lib/types'
 import { useSession } from './session'
 import { WeddingContext } from './wedding'
@@ -102,6 +103,11 @@ export default function WeddingProvider({ children }: { children: ReactNode }) {
 
   const deleteWedding = useCallback(async () => {
     if (!supabase || !currentId) return 'No wedding selected.'
+    try {
+      await deleteAllWeddingPhotos(currentId)
+    } catch (e) {
+      return `Couldn't remove your photos: ${(e as Error).message}`
+    }
     const { data, error } = await supabase.from('weddings').delete().eq('id', currentId).select('id')
     if (error) return error.message
     if (!data?.length) return "This wedding couldn't be deleted."

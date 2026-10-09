@@ -5,6 +5,7 @@ export interface WeddingSettings {
   wedding_date: string | null
   total_budget: number
   theme_color: string | null
+  show_default_photos: boolean
 }
 
 export interface EventRow {

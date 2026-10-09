@@ -19,6 +19,9 @@ create table if not exists weddings (
   created_at timestamptz default now()
 );
 
+-- Whether the dashboard carousel includes the starter illustrations alongside the couple's own photos.
+alter table weddings add column if not exists show_default_photos boolean not null default true;
+
 create table if not exists wedding_members (
   wedding_id uuid not null references weddings(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -493,3 +496,39 @@ begin
     end if;
   end loop;
 end $$;
+
+-- Couple photos for the dashboard carousel live in a private Storage bucket,
+-- one folder per wedding: wedding-photos/<wedding_id>/<file>. Only members can
+-- view, add or remove the files in their wedding's folder.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('wedding-photos', 'wedding-photos', false, 10485760, array['image/jpeg', 'image/png', 'image/webp'])
+on conflict (id) do nothing;
+
+create or replace function is_wedding_member_folder(p_name text)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+begin
+  return is_wedding_member(split_part(p_name, '/', 1)::uuid);
+exception when invalid_text_representation then
+  return false;
+end
+$$;
+
+revoke execute on function is_wedding_member_folder(text) from public, anon;
+grant execute on function is_wedding_member_folder(text) to authenticated;
+
+drop policy if exists "wedding members read photos" on storage.objects;
+create policy "wedding members read photos" on storage.objects
+  for select to authenticated using (bucket_id = 'wedding-photos' and is_wedding_member_folder(name));
+
+drop policy if exists "wedding members add photos" on storage.objects;
+create policy "wedding members add photos" on storage.objects
+  for insert to authenticated with check (bucket_id = 'wedding-photos' and is_wedding_member_folder(name));
+
+drop policy if exists "wedding members remove photos" on storage.objects;
+create policy "wedding members remove photos" on storage.objects
+  for delete to authenticated using (bucket_id = 'wedding-photos' and is_wedding_member_folder(name));
