@@ -6,6 +6,7 @@ export interface WeddingSettings {
   total_budget: number
   theme_color: string | null
   show_default_photos: boolean
+  currency: string
 }
 
 export interface EventRow {
@@ -143,6 +144,8 @@ export interface MoodEntry {
   mood: string
   quote: string | null
   note: string | null
+  author_id: string | null
+  visibility: 'shared' | 'private'
 }
 
 export interface PostWeddingItem {

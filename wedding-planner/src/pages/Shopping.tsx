@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTable } from '../hooks/useTable'
+import { useMoney } from '../hooks/useMoney'
 import type { ShoppingItem, ShoppingStatus } from '../lib/types'
 import { Button, Card, EmptyState, Input, PageHeader, Select, Textarea } from '../components/ui'
 
@@ -18,6 +19,7 @@ const STATUS_LABELS: Record<ShoppingStatus, string> = {
 }
 
 export default function Shopping() {
+  const { money } = useMoney()
   const { rows, insert, update, remove } = useTable<ShoppingItem>('shopping_items')
   const [showForm, setShowForm] = useState(false)
 
@@ -27,7 +29,7 @@ export default function Shopping() {
     <div>
       <PageHeader
         title="Shopping & Prep"
-        subtitle={`${rows.filter((r) => r.status === 'done').length}/${rows.length} done · ₹${totalCost.toLocaleString('en-IN')} spent`}
+        subtitle={`${rows.filter((r) => r.status === 'done').length}/${rows.length} done · ${money(totalCost)} spent`}
         action={<Button onClick={() => setShowForm((s) => !s)}>{showForm ? 'Close' : '+ Add item'}</Button>}
       />
 
@@ -62,6 +64,7 @@ function ShoppingRow({
   onUpdate: (id: string, v: Partial<ShoppingItem>) => void
   onRemove: (id: string) => void
 }) {
+  const { money } = useMoney()
   const [editing, setEditing] = useState(false)
 
   if (editing) {
@@ -89,7 +92,7 @@ function ShoppingRow({
           {item.category} {item.store_or_vendor && `· ${item.store_or_vendor}`}{' '}
           {item.due_date && `· due ${item.due_date}`}
         </p>
-        {item.cost != null && <p className="text-xs text-stone-400">₹{item.cost.toLocaleString('en-IN')}</p>}
+        {item.cost != null && <p className="text-xs text-stone-400">{money(item.cost)}</p>}
         {item.notes && <p className="text-xs text-stone-400">{item.notes}</p>}
       </div>
       <div className="flex items-center gap-2">
@@ -114,6 +117,7 @@ function ShoppingRow({
 }
 
 function ShoppingForm({ initial, onSave }: { initial?: ShoppingItem; onSave: (v: Partial<ShoppingItem>) => void }) {
+  const { symbol } = useMoney()
   const [itemName, setItemName] = useState(initial?.item_name ?? '')
   const [category, setCategory] = useState(initial?.category ?? CATEGORIES[0])
   const [store, setStore] = useState(initial?.store_or_vendor ?? '')
@@ -154,7 +158,7 @@ function ShoppingForm({ initial, onSave }: { initial?: ShoppingItem; onSave: (v:
         <Input className="mt-1" value={store} onChange={(e) => setStore(e.target.value)} />
       </label>
       <label className="text-sm text-stone-500">
-        Cost (₹)
+        Cost ({symbol})
         <Input className="mt-1" type="number" value={cost} onChange={(e) => setCost(e.target.value)} />
       </label>
       <label className="text-sm text-stone-500">

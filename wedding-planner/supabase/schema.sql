@@ -22,6 +22,9 @@ create table if not exists weddings (
 -- Whether the dashboard carousel includes the starter illustrations alongside the couple's own photos.
 alter table weddings add column if not exists show_default_photos boolean not null default true;
 
+-- Currency used for every amount in the app (ISO code, e.g. INR, USD).
+alter table weddings add column if not exists currency text not null default 'INR';
+
 create table if not exists wedding_members (
   wedding_id uuid not null references weddings(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -209,6 +212,10 @@ create table if not exists mood_entries (
   note text,
   created_at timestamptz default now()
 );
+
+-- Journal entries remember who wrote them and can be kept private to their author.
+alter table mood_entries add column if not exists author_id uuid references auth.users(id) on delete set null default auth.uid();
+alter table mood_entries add column if not exists visibility text not null default 'shared' check (visibility in ('shared', 'private'));
 
 -- Post-wedding setup checklist (new home, appliances, document updates, etc.)
 create table if not exists post_wedding_items (
@@ -449,7 +456,7 @@ begin
   for t in select unnest(array[
     'events','budget_items','guests',
     'stay_venues','stay_rooms','stay_assignments','vendors','tasks',
-    'shopping_items','inspiration_items','gifts','story_milestones','mood_entries','post_wedding_items'
+    'shopping_items','inspiration_items','gifts','story_milestones','post_wedding_items'
   ])
   loop
     execute format('alter table %I enable row level security', t);
@@ -532,3 +539,21 @@ create policy "wedding members add photos" on storage.objects
 drop policy if exists "wedding members remove photos" on storage.objects;
 create policy "wedding members remove photos" on storage.objects
   for delete to authenticated using (bucket_id = 'wedding-photos' and is_wedding_member_folder(name));
+
+-- Journal: members see shared entries; private entries are visible to, and editable by, their author only.
+alter table mood_entries enable row level security;
+create index if not exists mood_entries_wedding_idx on mood_entries (wedding_id);
+drop policy if exists "wedding members full access" on mood_entries;
+drop policy if exists "journal read" on mood_entries;
+drop policy if exists "journal add" on mood_entries;
+drop policy if exists "journal change" on mood_entries;
+drop policy if exists "journal remove" on mood_entries;
+create policy "journal read" on mood_entries for select to authenticated
+  using (is_wedding_member(wedding_id) and (visibility = 'shared' or author_id = auth.uid()));
+create policy "journal add" on mood_entries for insert to authenticated
+  with check (is_wedding_member(wedding_id) and author_id = auth.uid());
+create policy "journal change" on mood_entries for update to authenticated
+  using (is_wedding_member(wedding_id) and (visibility = 'shared' or author_id = auth.uid()))
+  with check (is_wedding_member(wedding_id) and (visibility = 'shared' or author_id = auth.uid()));
+create policy "journal remove" on mood_entries for delete to authenticated
+  using (is_wedding_member(wedding_id) and (visibility = 'shared' or author_id = auth.uid()));

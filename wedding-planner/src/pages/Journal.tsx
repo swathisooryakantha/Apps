@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { useTable } from '../hooks/useTable'
+import { usePartnerNames } from '../hooks/usePartnerNames'
+import { useSession } from '../context/session'
 import type { JournalPerson, MoodEntry } from '../lib/types'
 import { Button, Card, EmptyState, PageHeader, Select, Textarea } from '../components/ui'
 
@@ -77,7 +79,6 @@ const MOODS: { name: string; emoji: string; quotes: string[] }[] = [
   },
 ]
 
-const PERSON_LABELS: Record<JournalPerson, string> = { bride: 'Bride', groom: 'Groom' }
 const PERSON_STYLES: Record<JournalPerson, string> = {
   bride: 'bg-rose-100 text-rose-700',
   groom: 'bg-sky-100 text-sky-700',
@@ -102,7 +103,7 @@ export default function Journal() {
     <div>
       <PageHeader
         title="Mood Journal"
-        subtitle="A little wedding journal — how you're both feeling, day by day."
+        subtitle="How you're both feeling, day by day. Mark an entry private to keep it just for you."
         action={<Button onClick={() => setShowForm((s) => !s)}>{showForm ? 'Close' : '+ Add entry'}</Button>}
       />
 
@@ -146,6 +147,10 @@ function EntryRow({
 }) {
   const [editing, setEditing] = useState(false)
   const info = moodInfo(entry.mood)
+  const names = usePartnerNames()
+  const userId = useSession().session?.user.id
+  // Shared entries can be edited by either partner; private ones only by the person who wrote them.
+  const canEdit = entry.visibility !== 'private' || entry.author_id === userId
 
   if (editing) {
     return (
@@ -172,22 +177,25 @@ function EntryRow({
           <div>
             <div className="flex items-center gap-2">
               <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${PERSON_STYLES[entry.person]}`}>
-                {PERSON_LABELS[entry.person]}
+                {names[entry.person]}
               </span>
+              {entry.visibility === 'private' && <span className="text-xs text-stone-400">🔒 Private</span>}
               <span className="text-sm font-medium text-stone-700">{entry.mood}</span>
             </div>
             {entry.quote && <p className="mt-1 text-sm italic text-stone-500">&ldquo;{entry.quote}&rdquo;</p>}
             {entry.note && <p className="mt-1 text-sm text-stone-600">{entry.note}</p>}
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <Button variant="secondary" onClick={() => setEditing(true)}>
-            Edit
-          </Button>
-          <Button variant="danger" onClick={() => onRemove(entry.id)}>
-            Delete
-          </Button>
-        </div>
+        {canEdit && (
+          <div className="flex shrink-0 items-center gap-2">
+            <Button variant="secondary" onClick={() => setEditing(true)}>
+              Edit
+            </Button>
+            <Button variant="danger" onClick={() => onRemove(entry.id)}>
+              Delete
+            </Button>
+          </div>
+        )}
       </div>
     </Card>
   )
@@ -198,6 +206,8 @@ function EntryForm({ initial, onSave }: { initial?: MoodEntry; onSave: (v: Parti
   const [entryDate, setEntryDate] = useState(initial?.entry_date ?? format(new Date(), 'yyyy-MM-dd'))
   const [mood, setMood] = useState(initial?.mood ?? MOODS[0].name)
   const [note, setNote] = useState(initial?.note ?? '')
+  const [visibility, setVisibility] = useState<MoodEntry['visibility']>(initial?.visibility ?? 'shared')
+  const names = usePartnerNames()
 
   return (
     <form
@@ -205,14 +215,14 @@ function EntryForm({ initial, onSave }: { initial?: MoodEntry; onSave: (v: Parti
       onSubmit={(e) => {
         e.preventDefault()
         const quote = initial && initial.mood === mood && initial.quote ? initial.quote : randomQuote(mood)
-        onSave({ person, entry_date: entryDate, mood, quote, note: note || null })
+        onSave({ person, entry_date: entryDate, mood, quote, note: note || null, visibility })
       }}
     >
       <label className="text-sm text-stone-500">
         Who
         <Select className="mt-1" value={person} onChange={(e) => setPerson(e.target.value as JournalPerson)}>
-          <option value="bride">Bride</option>
-          <option value="groom">Groom</option>
+          <option value="bride">{names.bride}</option>
+          <option value="groom">{names.groom}</option>
         </Select>
       </label>
       <label className="text-sm text-stone-500">
@@ -237,6 +247,15 @@ function EntryForm({ initial, onSave }: { initial?: MoodEntry; onSave: (v: Parti
       <label className="text-sm text-stone-500 md:col-span-3">
         Note (optional)
         <Textarea className="mt-1" value={note} onChange={(e) => setNote(e.target.value)} rows={2} placeholder="What's on your mind today?" />
+      </label>
+      <label className="flex items-center gap-2 text-sm text-stone-600 md:col-span-3">
+        <input
+          type="checkbox"
+          className="h-4 w-4 accent-[var(--accent-600)]"
+          checked={visibility === 'private'}
+          onChange={(e) => setVisibility(e.target.checked ? 'private' : 'shared')}
+        />
+        🔒 Private: only I can see this entry
       </label>
       <Button type="submit" className="md:col-span-3">
         Save entry

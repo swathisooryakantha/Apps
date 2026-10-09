@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useTable } from '../hooks/useTable'
+import { useMoney } from '../hooks/useMoney'
 import type { Gift } from '../lib/types'
 import { Button, Card, EmptyState, Input, PageHeader, Select, Textarea } from '../components/ui'
 
 const CATEGORIES = ['Cash', 'Jewelry', 'Kitchenware', 'Home Decor', 'Clothing', 'Electronics', 'Other']
 
 export default function Gifts() {
+  const { money } = useMoney()
   const { rows, insert, update, remove } = useTable<Gift>('gifts')
   const [showForm, setShowForm] = useState(false)
 
@@ -15,7 +17,7 @@ export default function Gifts() {
     <div>
       <PageHeader
         title="Gifts"
-        subtitle={`${rows.length} gifts logged${totalCash ? ` · ₹${totalCash.toLocaleString('en-IN')} cash` : ''}`}
+        subtitle={`${rows.length} gifts logged${totalCash ? ` · ${money(totalCash)} cash` : ''}`}
         action={<Button onClick={() => setShowForm((s) => !s)}>{showForm ? 'Close' : '+ Add gift'}</Button>}
       />
 
@@ -42,7 +44,7 @@ export default function Gifts() {
               <p className="text-xs text-stone-400">
                 {g.category} {g.gift_description && `· ${g.gift_description}`} {g.relation && `· ${g.relation}`}
               </p>
-              {g.amount != null && <p className="text-xs text-stone-400">₹{g.amount.toLocaleString('en-IN')}</p>}
+              {g.amount != null && <p className="text-xs text-stone-400">{money(g.amount)}</p>}
               {g.notes && <p className="text-xs text-stone-400">{g.notes}</p>}
             </div>
             <div className="flex items-center gap-2">
@@ -83,6 +85,7 @@ function GiftEditButton({ gift, onUpdate }: { gift: Gift; onUpdate: (id: string,
 }
 
 function GiftForm({ initial, onSave }: { initial?: Gift; onSave: (v: Partial<Gift>) => void }) {
+  const { symbol } = useMoney()
   const [giverName, setGiverName] = useState(initial?.giver_name ?? '')
   const [relation, setRelation] = useState(initial?.relation ?? '')
   const [category, setCategory] = useState(initial?.category ?? CATEGORIES[0])
@@ -131,7 +134,7 @@ function GiftForm({ initial, onSave }: { initial?: Gift; onSave: (v: Partial<Gif
         />
       </label>
       <label className="text-sm text-stone-500">
-        Amount (₹, if cash)
+        Amount ({symbol}, if cash)
         <Input className="mt-1" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
       </label>
       <label className="text-sm text-stone-500 md:col-span-2">

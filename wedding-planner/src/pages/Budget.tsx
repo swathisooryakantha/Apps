@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTable } from '../hooks/useTable'
+import { useMoney } from '../hooks/useMoney'
 import { useWeddingSettings } from '../hooks/useWeddingSettings'
 import type { BudgetItem, BudgetSide } from '../lib/types'
 import { totals } from '../lib/budget'
@@ -14,6 +15,7 @@ const SIDE_LABELS: Record<BudgetSide, string> = {
 }
 
 export default function Budget() {
+  const { money } = useMoney()
   const { rows, insert, update, remove } = useTable<BudgetItem>('budget_items')
   const [showForm, setShowForm] = useState(false)
 
@@ -25,7 +27,7 @@ export default function Budget() {
     <div>
       <PageHeader
         title="Budget"
-        subtitle={`Estimated ₹${totalEstimated.toLocaleString('en-IN')} · Actual ₹${totalActual.toLocaleString('en-IN')}`}
+        subtitle={`Estimated ${money(totalEstimated)} · Actual ${money(totalActual)}`}
         action={<Button onClick={() => setShowForm((s) => !s)}>{showForm ? 'Close' : '+ Add expense'}</Button>}
       />
 
@@ -55,6 +57,7 @@ export default function Budget() {
 
 /** Overall budget vs. what's been spent so far; the total is set right here. */
 function BudgetSummary({ spent }: { spent: number }) {
+  const { money, symbol } = useMoney()
   const { settings, save } = useWeddingSettings()
   const totalBudget = settings?.total_budget || 0
   const [editing, setEditing] = useState(false)
@@ -68,8 +71,8 @@ function BudgetSummary({ spent }: { spent: number }) {
           <h2 className="text-sm font-semibold text-stone-600">Overall budget</h2>
           {totalBudget ? (
             <p className="text-lg font-semibold">
-              ₹{spent.toLocaleString('en-IN')}{' '}
-              <span className="text-sm font-normal text-stone-400">spent of ₹{totalBudget.toLocaleString('en-IN')}</span>
+              {money(spent)}{' '}
+              <span className="text-sm font-normal text-stone-400">spent of {money(totalBudget)}</span>
             </p>
           ) : (
             <p className="text-sm text-stone-400">Set a total to track how much is left.</p>
@@ -97,7 +100,7 @@ function BudgetSummary({ spent }: { spent: number }) {
             setEditing(false)
           }}
         >
-          <Input type="number" min="0" placeholder="Total budget (₹)" value={draft} onChange={(e) => setDraft(e.target.value)} autoFocus />
+          <Input type="number" min="0" placeholder={`Total budget (${symbol})`} value={draft} onChange={(e) => setDraft(e.target.value)} autoFocus />
           <Button type="submit">Save</Button>
           <Button variant="secondary" onClick={() => setEditing(false)}>
             Cancel
@@ -112,8 +115,8 @@ function BudgetSummary({ spent }: { spent: number }) {
           </div>
           <p className={`mt-1 text-xs ${remaining < 0 ? 'text-red-600' : 'text-stone-400'}`}>
             {remaining < 0
-              ? `₹${Math.abs(remaining).toLocaleString('en-IN')} over budget`
-              : `₹${remaining.toLocaleString('en-IN')} left`}
+              ? `${money(Math.abs(remaining))} over budget`
+              : `${money(remaining)} left`}
           </p>
         </>
       )}
@@ -134,6 +137,7 @@ function BudgetRow({
   onRemove: (id: string) => void
   onInsert: (v: Partial<BudgetItem>) => void
 }) {
+  const { money } = useMoney()
   const [editing, setEditing] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [addingSub, setAddingSub] = useState(false)
@@ -181,8 +185,8 @@ function BudgetRow({
         </div>
         <div className="flex items-center gap-4 text-sm">
           <div className="text-right">
-            <p className="text-stone-400">Est. ₹{estimated.toLocaleString('en-IN')}</p>
-            <p className="font-medium text-stone-700">Actual ₹{actual.toLocaleString('en-IN')}</p>
+            <p className="text-stone-400">Est. {money(estimated)}</p>
+            <p className="font-medium text-stone-700">Actual {money(actual)}</p>
           </div>
           {!hasChildren && (
             <label className="flex items-center gap-1 text-xs text-stone-500">
@@ -253,6 +257,7 @@ function SubItem({
   onUpdate: (id: string, v: Partial<BudgetItem>) => void
   onRemove: (id: string) => void
 }) {
+  const { money } = useMoney()
   const [editing, setEditing] = useState(false)
 
   if (editing) {
@@ -280,7 +285,7 @@ function SubItem({
         {item.notes && <p className="text-xs text-stone-400">{item.notes}</p>}
       </div>
       <div className="flex items-center gap-3 text-xs">
-        <span className="text-stone-400">Paid ₹{item.actual_cost.toLocaleString('en-IN')}</span>
+        <span className="text-stone-400">Paid {money(item.actual_cost)}</span>
         <label className="flex items-center gap-1 text-stone-500">
           <input type="checkbox" checked={item.paid} onChange={(e) => onUpdate(item.id, { paid: e.target.checked })} />
           Paid
@@ -306,6 +311,7 @@ function BudgetForm({
   onSave: (v: Partial<BudgetItem>) => void
   compact?: boolean
 }) {
+  const { symbol } = useMoney()
   const [category, setCategory] = useState(initial?.category ?? CATEGORIES[0])
   const [itemName, setItemName] = useState(initial?.item_name ?? '')
   const [estimated, setEstimated] = useState(String(initial?.estimated_cost ?? ''))
@@ -351,17 +357,17 @@ function BudgetForm({
         <Select className="mt-1" value={side} onChange={(e) => setSide(e.target.value as BudgetSide)}>
           <option value="bride">Bride's side</option>
           <option value="groom">Groom's side</option>
-          <option value="gift">Gift</option>
+          {side === 'gift' && <option value="gift">Gift</option>}
         </Select>
       </label>
       {!compact && (
         <label className="text-sm text-stone-500">
-          Estimated cost (₹)
+          Estimated cost ({symbol})
           <Input className="mt-1" type="number" value={estimated} onChange={(e) => setEstimated(e.target.value)} />
         </label>
       )}
       <label className="text-sm text-stone-500">
-        {compact ? 'Amount paid (₹)' : 'Actual cost (₹)'}
+        {compact ? `Amount paid (${symbol})` : `Actual cost (${symbol})`}
         <Input className="mt-1" type="number" value={actual} onChange={(e) => setActual(e.target.value)} />
       </label>
       <label className={`text-sm text-stone-500 ${compact ? '' : 'md:col-span-2'}`}>

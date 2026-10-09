@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { useTable } from '../hooks/useTable'
+import { useMoney } from '../hooks/useMoney'
 import type { PostWeddingItem } from '../lib/types'
 import { Button, Card, EmptyState, Input, PageHeader, ProgressBar, Select } from '../components/ui'
 
 const CATEGORIES = ['Home', 'Appliances', 'Furniture & Decor', 'Documents & Admin', 'Celebrations', 'Other']
 
-const OWNER_PRESETS = ['Me', 'Partner', 'Couple', 'Mom', 'Dad', 'Sister', 'Brother', 'Cousin', 'Other']
+const OWNER_PRESETS = ['Bride', 'Groom', 'Both', 'Mom', 'Dad', 'Sister', 'Brother', 'Cousin', 'Other']
 
 const OWNER_STYLES = 'bg-violet-100 text-violet-700'
 
@@ -28,6 +29,7 @@ const STARTER_ITEMS: { title: string; category: string; subtasks?: string[] }[] 
 ]
 
 export default function PostWedding() {
+  const { money } = useMoney()
   const { rows, insert, update, remove } = useTable<PostWeddingItem>('post_wedding_items')
   const [showForm, setShowForm] = useState(false)
 
@@ -61,7 +63,7 @@ export default function PostWedding() {
     <div>
       <PageHeader
         title="Post-Wedding Setup"
-        subtitle={`${done} of ${topLevel.length} done · ₹${totalCost.toLocaleString('en-IN')} spent`}
+        subtitle={`${done} of ${topLevel.length} done · ${money(totalCost)} spent`}
         action={
           <div className="flex gap-2">
             <Button variant="secondary" onClick={seedStarterItems}>Load starter checklist</Button>
@@ -130,6 +132,7 @@ function ItemRow({
   onRemove: (id: string) => void
   onInsert: (v: Partial<PostWeddingItem>) => Promise<PostWeddingItem | null>
 }) {
+  const { money } = useMoney()
   const [editing, setEditing] = useState(false)
   const [editingOwner, setEditingOwner] = useState(false)
   const [expanded, setExpanded] = useState(false)
@@ -179,7 +182,7 @@ function ItemRow({
           <span className={complete ? 'text-stone-400 line-through' : 'text-stone-800'}>
             {item.title} {complete && hasSubtasks && '🎉'}
           </span>
-          {item.cost != null && <span className="shrink-0 text-xs text-stone-400">₹{item.cost.toLocaleString('en-IN')}</span>}
+          {item.cost != null && <span className="shrink-0 text-xs text-stone-400">{money(item.cost)}</span>}
         </div>
 
         {editingOwner ? (
@@ -362,6 +365,7 @@ function OwnerPicker({
 }
 
 function ItemForm({ initial, onSave }: { initial?: PostWeddingItem; onSave: (v: Partial<PostWeddingItem>) => void }) {
+  const { symbol } = useMoney()
   const [title, setTitle] = useState(initial?.title ?? '')
   const [category, setCategory] = useState(initial?.category ?? CATEGORIES[0])
   const [cost, setCost] = useState(String(initial?.cost ?? ''))
@@ -397,7 +401,7 @@ function ItemForm({ initial, onSave }: { initial?: PostWeddingItem; onSave: (v: 
         </Select>
       </label>
       <label className="text-sm text-stone-500">
-        Cost (₹)
+        Cost ({symbol})
         <Input className="mt-1" type="number" value={cost} onChange={(e) => setCost(e.target.value)} />
       </label>
       <label className="text-sm text-stone-500">

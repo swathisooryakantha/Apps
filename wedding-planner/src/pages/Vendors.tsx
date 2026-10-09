@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useTable } from '../hooks/useTable'
+import { useMoney } from '../hooks/useMoney'
 import type { Vendor, VendorStatus } from '../lib/types'
 import { Button, Card, EmptyState, Input, PageHeader, Select, Textarea } from '../components/ui'
 
@@ -12,6 +13,7 @@ const STATUS_STYLES: Record<VendorStatus, string> = {
 const CATEGORIES = ['Venue', 'Catering', 'Photography', 'Decor', 'Makeup & Hair', 'Mehendi Artist', 'Music/DJ', 'Priest', 'Transport', 'Other']
 
 export default function Vendors() {
+  const { money } = useMoney()
   const { rows, insert, update, remove } = useTable<Vendor>('vendors')
   const [showForm, setShowForm] = useState(false)
 
@@ -44,7 +46,7 @@ export default function Vendors() {
               <p className="text-xs text-stone-400">
                 {v.category} {v.contact_name && `· ${v.contact_name}`} {v.phone && `· ${v.phone}`}
               </p>
-              {v.price != null && <p className="text-xs text-stone-400">₹{v.price.toLocaleString('en-IN')}</p>}
+              {v.price != null && <p className="text-xs text-stone-400">{money(v.price)}</p>}
               {v.notes && <p className="text-xs text-stone-400">{v.notes}</p>}
             </div>
             <div className="flex items-center gap-2">
@@ -69,6 +71,7 @@ export default function Vendors() {
 }
 
 function VendorForm({ onSave }: { onSave: (v: Partial<Vendor>) => void }) {
+  const { symbol } = useMoney()
   const [name, setName] = useState('')
   const [category, setCategory] = useState(CATEGORIES[0])
   const [contactName, setContactName] = useState('')
@@ -113,7 +116,7 @@ function VendorForm({ onSave }: { onSave: (v: Partial<Vendor>) => void }) {
         <Input className="mt-1" value={phone} onChange={(e) => setPhone(e.target.value)} />
       </label>
       <label className="text-sm text-stone-500">
-        Price (₹)
+        Price ({symbol})
         <Input className="mt-1" type="number" value={price} onChange={(e) => setPrice(e.target.value)} />
       </label>
       <label className="text-sm text-stone-500 md:col-span-2">

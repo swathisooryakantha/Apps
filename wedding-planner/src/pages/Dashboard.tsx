@@ -3,7 +3,8 @@ import { differenceInCalendarDays, format, parseISO } from 'date-fns'
 import { useTable } from '../hooks/useTable'
 import { useWeddingSettings } from '../hooks/useWeddingSettings'
 import type { Guest, Task, WeddingSettings, EventRow, Vendor } from '../lib/types'
-import { Card, Input, PageHeader, ProgressBar, Button } from '../components/ui'
+import { Card, Input, PageHeader, ProgressBar, Button, Select } from '../components/ui'
+import { CURRENCIES } from '../lib/money'
 import PhotoBanner from '../components/PhotoBanner'
 import InvitePartnerPrompt from '../components/InvitePartnerPrompt'
 
@@ -133,6 +134,7 @@ function SettingsForm({
   const [brideName, setBrideName] = useState(settings?.bride_name ?? '')
   const [groomName, setGroomName] = useState(settings?.groom_name ?? '')
   const [weddingDate, setWeddingDate] = useState(settings?.wedding_date ?? '')
+  const [currency, setCurrency] = useState(settings?.currency ?? 'INR')
   const [themeColor, setThemeColor] = useState(settings?.theme_color ?? '#e11d48')
 
   return (
@@ -144,6 +146,7 @@ function SettingsForm({
           bride_name: brideName,
           groom_name: groomName,
           wedding_date: weddingDate || null,
+          currency,
           theme_color: themeColor,
         })
       }}
@@ -159,6 +162,16 @@ function SettingsForm({
       <label className="text-sm text-stone-500">
         Wedding date
         <Input className="mt-1" type="date" value={weddingDate} onChange={(e) => setWeddingDate(e.target.value)} />
+      </label>
+      <label className="text-sm text-stone-500">
+        Currency
+        <Select className="mt-1" value={currency} onChange={(e) => setCurrency(e.target.value)}>
+          {CURRENCIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.label}
+            </option>
+          ))}
+        </Select>
       </label>
       <div className="text-sm text-stone-500 md:col-span-2">
         Theme color
