@@ -5,7 +5,6 @@ import { useWeddingSettings } from '../hooks/useWeddingSettings'
 import { useTable } from '../hooks/useTable'
 import { useDueReminders } from '../hooks/useDueReminders'
 import { getNotificationPermission, notificationsSupported, requestNotificationPermission } from '../lib/notifications'
-import { COUPLE_PHOTOS } from '../lib/photos'
 import type { EventRow, Task } from '../lib/types'
 
 const NAV_ITEMS = [
@@ -75,11 +74,9 @@ export default function Layout() {
       {/* Sidebar (desktop / iPad landscape) */}
       <aside className="hidden w-60 shrink-0 border-r border-[var(--accent-100)] bg-white/70 p-5 backdrop-blur md:flex md:flex-col md:gap-1">
         <div className="mb-5 flex items-center gap-2 px-2">
-          <img
-            src={COUPLE_PHOTOS[0]}
-            alt=""
-            className="h-9 w-9 rounded-full border border-[var(--accent-100)] object-cover"
-          />
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--accent-100)] bg-[var(--accent-50)] text-base" aria-hidden>
+            💍
+          </span>
           <div>
             <h1 className="font-display text-lg font-semibold leading-tight text-[var(--accent-800)]">
               {coupleNames || 'Our Wedding'}
