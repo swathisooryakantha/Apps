@@ -36,6 +36,12 @@ export default function Settings() {
   const [members, setMembers] = useState<WeddingMember[]>([])
   const [invite, setInvite] = useState<WeddingInvite | null>(null)
   const weddingId = wedding?.id ?? null
+  const location = useLocation()
+
+  // Dashboard shortcuts ("Change photos", "Invite your partner") link to a section here.
+  useEffect(() => {
+    if (location.hash) document.getElementById(location.hash.slice(1))?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [location.hash])
 
   const refresh = useCallback(async () => {
     if (!supabase || !weddingId) return
@@ -78,7 +84,9 @@ export default function Settings() {
       )}
 
       <PhotosCard />
-      <MembersCard members={members} invite={invite} onChange={refresh} />
+      <div id="invite" className="scroll-mt-4">
+        <MembersCard members={members} invite={invite} onChange={refresh} />
+      </div>
       <ExportCard />
       <DangerCard soleOwner={members.length <= 1} />
     </div>
@@ -90,17 +98,10 @@ function PhotosCard() {
   const { photos, loading, error, upload, remove } = useWeddingPhotos()
   const [uploading, setUploading] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
-  const ref = useRef<HTMLDivElement>(null)
-  const location = useLocation()
   const showStarters = wedding?.show_default_photos ?? true
 
-  // "Change photos" on the dashboard links here.
-  useEffect(() => {
-    if (location.hash === '#photos') ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [location.hash])
-
   return (
-    <div ref={ref} id="photos" className="scroll-mt-4">
+    <div id="photos" className="scroll-mt-4">
       <Card className="mb-4">
         <h2 className="text-sm font-semibold text-stone-600">Dashboard photos</h2>
         <p className="mb-3 text-xs text-stone-400">

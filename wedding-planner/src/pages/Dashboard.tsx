@@ -5,6 +5,7 @@ import { useWeddingSettings } from '../hooks/useWeddingSettings'
 import type { Guest, Task, WeddingSettings, EventRow, Vendor } from '../lib/types'
 import { Card, Input, PageHeader, ProgressBar, Button } from '../components/ui'
 import PhotoBanner from '../components/PhotoBanner'
+import InvitePartnerPrompt from '../components/InvitePartnerPrompt'
 
 export default function Dashboard() {
   const { settings, save } = useWeddingSettings()
@@ -49,6 +50,8 @@ export default function Dashboard() {
           </Button>
         }
       />
+
+      <InvitePartnerPrompt />
 
       {editing && (
         <Card className="mb-5">
