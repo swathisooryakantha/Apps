@@ -62,7 +62,7 @@ export default function PostWedding() {
   return (
     <div>
       <PageHeader
-        title="Post-Wedding Setup"
+        title="After the Wedding"
         subtitle={`${done} of ${topLevel.length} done · ${money(totalCost)} spent`}
         action={
           <div className="flex gap-2">

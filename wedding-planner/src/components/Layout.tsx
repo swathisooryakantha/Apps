@@ -6,32 +6,20 @@ import { useTable } from '../hooks/useTable'
 import { useDueReminders } from '../hooks/useDueReminders'
 import { getNotificationPermission, notificationsSupported, requestNotificationPermission } from '../lib/notifications'
 import type { EventRow, Task } from '../lib/types'
+import { MOBILE_PRIMARY_PATHS, visibleGroups } from '../lib/nav'
 
-const NAV_ITEMS = [
-  { to: '/', label: 'Dashboard', icon: '🏠' },
-  { to: '/events', label: 'Events', icon: '📅' },
-  { to: '/budget', label: 'Budget', icon: '💰' },
-  { to: '/tasks', label: 'Checklist', icon: '✅' },
-  { to: '/guests', label: 'Guests', icon: '👥' },
-  { to: '/stay', label: 'Stay', icon: '🏨' },
-  { to: '/vendors', label: 'Vendors', icon: '🤝' },
-  { to: '/shopping', label: 'Shopping & Prep', icon: '🛍️' },
-  { to: '/inspiration', label: 'Inspiration', icon: '📸' },
-  { to: '/gifts', label: 'Gifts', icon: '🎁' },
-  { to: '/post-wedding', label: 'Post-Wedding', icon: '🏡' },
-  { to: '/journal', label: 'Mood Journal', icon: '📓' },
-  { to: '/our-story', label: 'Our Story', icon: '💌' },
-  { to: '/settings', label: 'Settings', icon: '⚙️' },
-]
-
-const MOBILE_PRIMARY = NAV_ITEMS.slice(0, 4)
-const MOBILE_MORE = NAV_ITEMS.slice(4)
 
 export default function Layout() {
   const [moreOpen, setMoreOpen] = useState(false)
   const location = useLocation()
-  const moreIsActive = MOBILE_MORE.some((item) => item.to === location.pathname)
   const { settings } = useWeddingSettings()
+  const groups = visibleGroups(settings?.hidden_sections ?? [])
+  const visibleItems = groups.flatMap((g) => g.items)
+  const mobilePrimary = MOBILE_PRIMARY_PATHS.flatMap((path) => visibleItems.filter((i) => i.to === path))
+  const moreGroups = groups
+    .map((g) => ({ ...g, items: g.items.filter((i) => !MOBILE_PRIMARY_PATHS.includes(i.to)) }))
+    .filter((g) => g.items.length)
+  const moreIsActive = moreGroups.some((g) => g.items.some((item) => item.to === location.pathname))
   const { rows: events } = useTable<EventRow>('events')
   const { rows: tasks } = useTable<Task>('tasks')
   const [notifPermission, setNotifPermission] = useState(getNotificationPermission())
@@ -72,7 +60,7 @@ export default function Layout() {
       )}
 
       {/* Sidebar (desktop / iPad landscape) */}
-      <aside className="hidden w-60 shrink-0 border-r border-[var(--accent-100)] bg-white/70 p-5 backdrop-blur md:flex md:flex-col md:gap-1">
+      <aside className="hidden w-60 shrink-0 md:sticky md:top-0 md:h-svh md:overflow-y-auto border-r border-[var(--accent-100)] bg-white/70 p-5 backdrop-blur md:flex md:flex-col md:gap-1">
         <div className="mb-5 flex items-center gap-2 px-2">
           <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[var(--accent-100)] bg-[var(--accent-50)] text-base" aria-hidden>
             💍
@@ -84,21 +72,29 @@ export default function Layout() {
             <p className="text-xs text-stone-400">Plan it together, beautifully.</p>
           </div>
         </div>
-        {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) =>
-              `rounded-xl px-3 py-2.5 text-sm font-medium transition ${
-                isActive
-                  ? 'bg-[var(--accent-100)] text-[var(--accent-700)] shadow-sm'
-                  : 'text-stone-600 hover:bg-[var(--accent-50)]'
-              }`
-            }
-          >
-            <span className="mr-2.5">{item.icon}</span>
-            {item.label}
-          </NavLink>
+        {groups.map((group, gi) => (
+          <div key={group.title ?? `group-${gi}`} className="flex flex-col gap-0.5">
+            {group.title && (
+              <p className="mt-3 px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-stone-400">{group.title}</p>
+            )}
+            {group.items.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/'}
+                className={({ isActive }) =>
+                  `rounded-xl px-3 py-2 text-sm font-medium transition ${
+                    isActive
+                      ? 'bg-[var(--accent-100)] text-[var(--accent-700)] shadow-sm'
+                      : 'text-stone-600 hover:bg-[var(--accent-50)]'
+                  }`
+                }
+              >
+                <span className="mr-2.5">{item.icon}</span>
+                {item.label}
+              </NavLink>
+            ))}
+          </div>
         ))}
         {supabase && (
           <button
@@ -126,21 +122,30 @@ export default function Layout() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-stone-200" />
-            <div className="grid grid-cols-3 gap-2">
-              {MOBILE_MORE.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  onClick={() => setMoreOpen(false)}
-                  className={({ isActive }) =>
-                    `flex flex-col items-center gap-1 rounded-xl px-2 py-3 text-xs font-medium ${
-                      isActive ? 'bg-[var(--accent-100)] text-[var(--accent-700)]' : 'bg-[var(--accent-50)]/60 text-stone-600'
-                    }`
-                  }
-                >
-                  <span className="text-xl">{item.icon}</span>
-                  {item.label}
-                </NavLink>
+            <div className="max-h-[65svh] space-y-3 overflow-y-auto">
+              {moreGroups.map((group, gi) => (
+                <div key={group.title ?? `group-${gi}`}>
+                  {group.title && (
+                    <p className="mb-1.5 px-1 text-[11px] font-semibold uppercase tracking-wider text-stone-400">{group.title}</p>
+                  )}
+                  <div className="grid grid-cols-3 gap-2">
+                    {group.items.map((item) => (
+                      <NavLink
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setMoreOpen(false)}
+                        className={({ isActive }) =>
+                          `flex flex-col items-center gap-1 rounded-xl px-2 py-3 text-xs font-medium ${
+                            isActive ? 'bg-[var(--accent-100)] text-[var(--accent-700)]' : 'bg-[var(--accent-50)]/60 text-stone-600'
+                          }`
+                        }
+                      >
+                        <span className="text-xl">{item.icon}</span>
+                        {item.label}
+                      </NavLink>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
             {supabase && (
@@ -156,11 +161,14 @@ export default function Layout() {
       )}
 
       {/* Bottom tab bar (mobile / phone) */}
-      <nav className="fixed inset-x-0 bottom-0 z-40 grid grid-cols-5 border-t border-[var(--accent-100)] bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md shadow-[0_-4px_16px_rgba(0,0,0,0.04)] md:hidden">
-        {MOBILE_PRIMARY.map((item) => (
+      <nav
+        style={{ gridTemplateColumns: `repeat(${mobilePrimary.length + 1}, minmax(0, 1fr))` }}
+        className="fixed inset-x-0 bottom-0 z-40 grid border-t border-[var(--accent-100)] bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-md shadow-[0_-4px_16px_rgba(0,0,0,0.04)] md:hidden">
+        {mobilePrimary.map((item) => (
           <NavLink
             key={item.to}
             to={item.to}
+            end={item.to === '/'}
             className={({ isActive }) =>
               `flex flex-col items-center justify-center gap-0.5 py-2.5 text-[11px] font-medium ${
                 isActive ? 'text-[var(--accent-700)]' : 'text-stone-400'

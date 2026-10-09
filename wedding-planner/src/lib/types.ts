@@ -7,6 +7,7 @@ export interface WeddingSettings {
   theme_color: string | null
   show_default_photos: boolean
   currency: string
+  hidden_sections: string[]
 }
 
 export interface EventRow {
@@ -83,6 +84,7 @@ export interface Vendor {
   price: number | null
   status: VendorStatus
   notes: string | null
+  budget_item_id: string | null
 }
 
 export interface Task {
@@ -107,6 +109,7 @@ export interface ShoppingItem {
   cost: number | null
   due_date: string | null
   notes: string | null
+  budget_item_id: string | null
 }
 
 export interface InspirationItem {

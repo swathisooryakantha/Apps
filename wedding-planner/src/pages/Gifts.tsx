@@ -134,7 +134,7 @@ function GiftForm({ initial, onSave }: { initial?: Gift; onSave: (v: Partial<Gif
         />
       </label>
       <label className="text-sm text-stone-500">
-        Amount ({symbol}, if cash)
+        Value ({symbol}, if known)
         <Input className="mt-1" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
       </label>
       <label className="text-sm text-stone-500 md:col-span-2">

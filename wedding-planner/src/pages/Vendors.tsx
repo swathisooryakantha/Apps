@@ -3,11 +3,21 @@ import { useTable } from '../hooks/useTable'
 import { useMoney } from '../hooks/useMoney'
 import type { Vendor, VendorStatus } from '../lib/types'
 import { Button, Card, EmptyState, Input, PageHeader, Select, Textarea } from '../components/ui'
+import AddToBudgetButton from '../components/AddToBudgetButton'
 
 const STATUS_STYLES: Record<VendorStatus, string> = {
   considering: 'bg-stone-100 text-stone-500',
   contacted: 'bg-amber-100 text-amber-700',
   booked: 'bg-emerald-100 text-emerald-700',
+}
+
+// Budget category a vendor's cost goes under when added to the budget.
+const BUDGET_CATEGORY: Record<string, string> = {
+  Venue: 'Venue',
+  Catering: 'Catering',
+  Photography: 'Photography',
+  Decor: 'Decor',
+  Priest: 'Priest & Rituals',
 }
 
 const CATEGORIES = ['Venue', 'Catering', 'Photography', 'Decor', 'Makeup & Hair', 'Mehendi Artist', 'Music/DJ', 'Priest', 'Transport', 'Other']
@@ -49,7 +59,14 @@ export default function Vendors() {
               {v.price != null && <p className="text-xs text-stone-400">{money(v.price)}</p>}
               {v.notes && <p className="text-xs text-stone-400">{v.notes}</p>}
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <AddToBudgetButton
+                linkedBudgetItemId={v.budget_item_id}
+                category={BUDGET_CATEGORY[v.category ?? ''] ?? 'Other'}
+                itemName={v.category ? `${v.name} (${v.category})` : v.name}
+                amount={v.price}
+                onLinked={(budget_item_id) => update(v.id, { budget_item_id })}
+              />
               <select
                 value={v.status}
                 onChange={(e) => update(v.id, { status: e.target.value as VendorStatus })}

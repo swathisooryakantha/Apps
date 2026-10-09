@@ -25,6 +25,9 @@ alter table weddings add column if not exists show_default_photos boolean not nu
 -- Currency used for every amount in the app (ISO code, e.g. INR, USD).
 alter table weddings add column if not exists currency text not null default 'INR';
 
+-- Optional sections the couple has hidden from the menu (paths like '/stay').
+alter table weddings add column if not exists hidden_sections text[] not null default '{}';
+
 create table if not exists wedding_members (
   wedding_id uuid not null references weddings(id) on delete cascade,
   user_id uuid not null references auth.users(id) on delete cascade,
@@ -557,3 +560,7 @@ create policy "journal change" on mood_entries for update to authenticated
   with check (is_wedding_member(wedding_id) and (visibility = 'shared' or author_id = auth.uid()));
 create policy "journal remove" on mood_entries for delete to authenticated
   using (is_wedding_member(wedding_id) and (visibility = 'shared' or author_id = auth.uid()));
+
+-- Vendors and shopping items remember the budget line created from them ("Add to budget").
+alter table vendors add column if not exists budget_item_id uuid references budget_items(id) on delete set null;
+alter table shopping_items add column if not exists budget_item_id uuid references budget_items(id) on delete set null;

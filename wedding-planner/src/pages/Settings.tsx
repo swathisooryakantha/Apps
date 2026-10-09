@@ -7,6 +7,7 @@ import { useWedding } from '../context/wedding'
 import { coupleLabel } from '../lib/couple'
 import { inviteUrl } from '../lib/invite'
 import { STARTER_PHOTOS } from '../lib/photos'
+import { OPTIONAL_SECTIONS } from '../lib/nav'
 import { useWeddingPhotos } from '../hooks/useWeddingPhotos'
 import type { WeddingInvite, WeddingMember } from '../lib/types'
 import { Button, Card, Input, PageHeader, Select } from '../components/ui'
@@ -84,6 +85,7 @@ export default function Settings() {
       )}
 
       <PhotosCard />
+      <SectionsCard />
       <div id="invite" className="scroll-mt-4">
         <MembersCard members={members} invite={invite} onChange={refresh} />
       </div>
@@ -172,6 +174,46 @@ function PhotosCard() {
         )}
 
         {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      </Card>
+    </div>
+  )
+}
+
+function SectionsCard() {
+  const { wedding, save } = useWedding()
+  const hidden = wedding?.hidden_sections ?? []
+
+  return (
+    <div id="sections" className="scroll-mt-4">
+      <Card className="mb-4">
+        <h2 className="text-sm font-semibold text-stone-600">Sections</h2>
+        <p className="mb-3 text-xs text-stone-400">
+          Hide the parts of the app you don't need. Nothing is deleted — turn a section back on any time.
+        </p>
+        <div className="grid grid-cols-2 gap-2 md:grid-cols-3">
+          {OPTIONAL_SECTIONS.map((section) => {
+            const shown = !hidden.includes(section.to)
+            return (
+              <label
+                key={section.to}
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${shown ? 'bg-[var(--accent-50)]' : 'bg-stone-100 text-stone-400'}`}
+              >
+                <input
+                  type="checkbox"
+                  className="h-4 w-4 accent-[var(--accent-600)]"
+                  checked={shown}
+                  onChange={(e) =>
+                    save({
+                      hidden_sections: e.target.checked ? hidden.filter((p) => p !== section.to) : [...hidden, section.to],
+                    })
+                  }
+                />
+                <span aria-hidden>{section.icon}</span>
+                {section.label}
+              </label>
+            )
+          })}
+        </div>
       </Card>
     </div>
   )

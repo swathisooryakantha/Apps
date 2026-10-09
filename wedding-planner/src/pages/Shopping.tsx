@@ -3,8 +3,20 @@ import { useTable } from '../hooks/useTable'
 import { useMoney } from '../hooks/useMoney'
 import type { ShoppingItem, ShoppingStatus } from '../lib/types'
 import { Button, Card, EmptyState, Input, PageHeader, Select, Textarea } from '../components/ui'
+import AddToBudgetButton from '../components/AddToBudgetButton'
 
 const CATEGORIES = ['Sarees', 'Blouses', 'Jewelry', 'Groom Attire', 'Footwear', 'Invitations', 'Return Gifts', 'Beauty/Makeup Trial', 'Other']
+
+// Budget category a shopping item's cost goes under when added to the budget.
+const BUDGET_CATEGORY: Record<string, string> = {
+  Sarees: 'Attire',
+  Blouses: 'Attire',
+  'Groom Attire': 'Attire',
+  Footwear: 'Attire',
+  Jewelry: 'Jewelry',
+  Invitations: 'Invitations',
+  'Return Gifts': 'Gifts',
+}
 
 const STATUS_STYLES: Record<ShoppingStatus, string> = {
   to_do: 'bg-stone-100 text-stone-500',
@@ -95,7 +107,14 @@ function ShoppingRow({
         {item.cost != null && <p className="text-xs text-stone-400">{money(item.cost)}</p>}
         {item.notes && <p className="text-xs text-stone-400">{item.notes}</p>}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
+        <AddToBudgetButton
+          linkedBudgetItemId={item.budget_item_id}
+          category={BUDGET_CATEGORY[item.category ?? ''] ?? 'Other'}
+          itemName={item.item_name}
+          amount={item.cost}
+          onLinked={(budget_item_id) => onUpdate(item.id, { budget_item_id })}
+        />
         <select
           value={item.status}
           onChange={(e) => onUpdate(item.id, { status: e.target.value as ShoppingStatus })}
