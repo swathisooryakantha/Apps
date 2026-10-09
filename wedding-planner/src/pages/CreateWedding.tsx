@@ -29,11 +29,11 @@ export default function CreateWedding() {
         }}
       >
         <label className="text-sm text-stone-500">
-          Your name
+          Bride's name
           <Input className="mt-1" required value={yourName} onChange={(e) => setYourName(e.target.value)} />
         </label>
         <label className="text-sm text-stone-500">
-          Your partner's name
+          Groom's name
           <Input className="mt-1" value={partnerName} onChange={(e) => setPartnerName(e.target.value)} />
         </label>
         <label className="text-sm text-stone-500">

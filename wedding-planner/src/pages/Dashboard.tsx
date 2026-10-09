@@ -146,11 +146,11 @@ function SettingsForm({
       }}
     >
       <label className="text-sm text-stone-500">
-        Partner 1's name
+        Bride's name
         <Input className="mt-1" value={brideName} onChange={(e) => setBrideName(e.target.value)} />
       </label>
       <label className="text-sm text-stone-500">
-        Partner 2's name
+        Groom's name
         <Input className="mt-1" value={groomName} onChange={(e) => setGroomName(e.target.value)} />
       </label>
       <label className="text-sm text-stone-500">
