@@ -8,6 +8,7 @@ import { getNotificationPermission, notificationsSupported, requestNotificationP
 import type { EventRow, Task } from '../lib/types'
 import { MOBILE_PRIMARY_PATHS, visibleGroups } from '../lib/nav'
 import { applyTheme, themeFor } from '../lib/themes'
+import SideKolam from './SideKolam'
 
 
 export default function Layout() {
@@ -107,6 +108,8 @@ export default function Layout() {
           </button>
         )}
       </aside>
+
+      {settings?.show_decor !== false && themeFor(settings?.theme).motifColor && <SideKolam />}
 
       {/* Main content */}
       <main className="flex-1 overflow-y-auto pb-24 md:pb-6">

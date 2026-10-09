@@ -204,8 +204,8 @@ function ThemeCard() {
               onChange={(e) => save({ show_decor: e.target.checked })}
             />
             <span>
-              <span className="font-medium">Show {current.motif === 'kolam' ? 'kolam' : 'background'} decorations</span>
-              <span className="block text-xs text-stone-400">The subtle pattern behind pages and the divider on the dashboard.</span>
+              <span className="font-medium">Show kolam decorations</span>
+              <span className="block text-xs text-stone-400">The braid kolam down the side of the screen and the divider on the dashboard.</span>
             </span>
           </label>
         )}

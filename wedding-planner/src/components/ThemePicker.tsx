@@ -1,4 +1,4 @@
-import { THEMES, motifTile, type ThemeId } from '../lib/themes'
+import { THEMES, braidTile, type ThemeId } from '../lib/themes'
 
 /** Grid of theme preview cards ("Pick your vibe"). */
 export default function ThemePicker({
@@ -23,9 +23,15 @@ export default function ThemePicker({
           >
             <div
               className={`relative ${compact ? 'h-14' : 'h-20'} p-2`}
-              style={{ backgroundColor: t.base, backgroundImage: [motifTile(t), t.background].filter(Boolean).join(', ') }}
+              style={{
+                backgroundColor: t.base,
+                backgroundImage: [t.motifColor && braidTile(t.motifColor), t.background].filter(Boolean).join(', '),
+                backgroundRepeat: 'repeat-y, no-repeat',
+                backgroundPosition: 'right 2px top, center',
+                backgroundSize: '10px auto, cover',
+              }}
             >
-              <div className="flex h-full flex-col justify-end rounded-md p-1.5" style={{ backgroundColor: t.dark ? '#221d35' : 'rgba(255,255,255,0.85)' }}>
+              <div className="mr-3 flex h-full flex-col justify-end rounded-md p-1.5" style={{ backgroundColor: t.dark ? '#221d35' : 'rgba(255,255,255,0.85)' }}>
                 <span className="text-sm font-semibold leading-none" style={{ fontFamily: t.displayFont, color: t.dark ? '#eeeaf7' : t.accent }}>
                   Aa
                 </span>
