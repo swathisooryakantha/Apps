@@ -2,10 +2,19 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
+// Link-preview images need an absolute URL. On Vercel, use the project's production
+// domain (or this deployment's URL); SITE_URL overrides it anywhere else.
+const host = process.env.VERCEL_PROJECT_PRODUCTION_URL || process.env.VERCEL_URL
+const siteUrl = (process.env.SITE_URL || (host ? `https://${host}` : '')).replace(/\/$/, '')
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     react(),
+    {
+      name: 'site-url',
+      transformIndexHtml: (html) => html.replaceAll('%SITE_URL%', siteUrl),
+    },
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
